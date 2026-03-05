@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generate trajectories to disk with random or ckpt agent.
+"""使用随机代理或检查点代理生成轨迹到磁盘。
 
-TODO: Usage
+用于生成强化学习训练数据，支持使用随机策略或训练好的检查点策略
+来生成环境轨迹数据。
+
+TODO: 使用说明
 """
 
 from __future__ import absolute_import

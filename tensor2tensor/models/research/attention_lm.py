@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Self-attention based language model.
+"""基于自注意力的语言模型。
 
-DEPRECATED. Use Transformer which supports running the decoder only.
+已弃用。请使用支持仅解码器模式的 Transformer。
 
-Like transformer.py, but no encoder
+类似于 transformer.py，但没有编码器
 
 decoder: [Self-Attention, Feed-forward] x n
 
+该模型使用自注意力机制进行语言建模，
+适用于文本生成和语言理解任务。
 """
 
 from __future__ import absolute_import
@@ -45,9 +47,20 @@ framework = contrib.framework(msg="warn")
     "Transformer.has_input=False.")
 @registry.register_model
 class AttentionLM(t2t_model.T2TModel):
-  """Attention net.  See file docstring."""
+  """注意力网络。
+
+  基于自注意力的语言模型，现已弃用，建议使用 Transformer 的仅解码器模式。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     # Remove dropout if not training
     hparams = self._hparams
     targets = features["targets"]
@@ -66,16 +79,16 @@ class AttentionLM(t2t_model.T2TModel):
 
 
 def attention_lm_prepare_decoder(targets, hparams):
-  """Prepare one shard of the model for the decoder.
+  """准备解码器的一个分片。
 
-  Args:
-    targets: a Tensor.
-    hparams: run hyperparameters
+  参数：
+      targets: 目标张量
+      hparams: 运行超参数
 
-  Returns:
-    decoder_input: a Tensor, bottom of decoder stack
-    decoder_self_attention_bias: a Tensor, containing large negative values
-    to implement masked attention and possibly biases for diagonal alignments
+  返回：
+      decoder_input: 张量，解码器栈的底部
+      decoder_self_attention_bias: 张量，包含大的负值以实现掩码注意力，
+          以及可能用于对角对齐的偏置
   """
   if hparams.prepend_mode == "prepend_inputs_full_attention":
     decoder_self_attention_bias = (
@@ -95,17 +108,17 @@ def attention_lm_decoder(decoder_input,
                          decoder_self_attention_bias,
                          hparams,
                          name="decoder"):
-  """A stack of attention_lm layers.
+  """注意力语言模型的解码器栈。
 
-  Args:
-    decoder_input: a Tensor
-    decoder_self_attention_bias: bias Tensor for self-attention
-      (see common_attention.attention_bias())
-    hparams: hyperparameters for model
-    name: a string
+  参数：
+      decoder_input: 输入张量
+      decoder_self_attention_bias: 自注意力的偏置张量
+          （见 common_attention.attention_bias()）
+      hparams: 模型超参数
+      name: 字符串名称
 
-  Returns:
-    y: a Tensors
+  返回：
+      y: 解码器输出张量
   """
   x = decoder_input
   with tf.variable_scope(name):
@@ -131,13 +144,17 @@ def attention_lm_decoder(decoder_input,
 
 @registry.register_hparams
 def attention_lm_base():
-  """Set of hyperparameters."""
+  """基础超参数集。
+
+  返回：
+      HParams 对象，包含注意力语言模型的基础超参数配置
+  """
   hparams = common_hparams.basic_params1()
   hparams.hidden_size = 1024
   hparams.batch_size = 8192
   hparams.max_length = 256
   hparams.dropout = 0.0
-  hparams.clip_grad_norm = 0.  # i.e. no gradient clipping
+  hparams.clip_grad_norm = 0.  # 即无梯度裁剪
   hparams.optimizer_adam_epsilon = 1e-9
   hparams.learning_rate_decay_scheme = "noam"
   hparams.learning_rate = 0.1
@@ -151,13 +168,12 @@ def attention_lm_base():
   hparams.label_smoothing = 0.0
   hparams.shared_embedding_and_softmax_weights = False
 
-  hparams.add_hparam("filter_size", 4096)  # Add new ones like this.
-  # attention-related flags
+  hparams.add_hparam("filter_size", 4096)  # 像这样添加新的超参数
+  # 注意力相关的标志
   hparams.add_hparam("num_heads", 8)
   hparams.add_hparam("attention_key_channels", 0)
   hparams.add_hparam("attention_value_channels", 0)
-  # All hyperparameters ending in "dropout" are automatically set to 0.0
-  # when not in training mode.
+  # 所有以 "dropout" 结尾的超参数在非训练模式下会自动设置为 0.0
   hparams.add_hparam("attention_dropout", 0.0)
   hparams.add_hparam("relu_dropout", 0.0)
   hparams.add_hparam("pos", "timing")  # timing, none
@@ -167,14 +183,14 @@ def attention_lm_base():
 
 @registry.register_hparams
 def attention_lm_small():
-  """Cheap model.
+  """轻量级模型。
 
-  on lm1b_32k:
-     45M params
-     2 steps/sec on  [GeForce GTX TITAN X]
+  在 lm1b_32k 上：
+     45M 参数
+     在 [GeForce GTX TITAN X] 上 2 steps/sec
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含轻量级注意力语言模型的超参数配置
   """
   hparams = attention_lm_base()
   hparams.num_hidden_layers = 4
@@ -186,7 +202,11 @@ def attention_lm_small():
 
 @registry.register_hparams
 def attention_lm_translation():
-  """Version to use for seq2seq."""
+  """用于序列到序列任务的版本。
+
+  返回：
+      HParams 对象，包含用于序列到序列任务的注意力语言模型超参数配置
+  """
   hparams = attention_lm_base()
   hparams.layer_preprocess_sequence = "n"
   hparams.layer_postprocess_sequence = "da"
@@ -200,7 +220,11 @@ def attention_lm_translation():
 
 @registry.register_hparams
 def attention_lm_translation_l12():
-  """Version to use for seq2seq."""
+  """用于序列到序列任务的 12 层版本。
+
+  返回：
+      HParams 对象，包含 12 层序列到序列注意力语言模型的超参数配置
+  """
   hparams = attention_lm_translation()
   hparams.batch_size = 4096
   hparams.num_hidden_layers = 12
@@ -209,7 +233,11 @@ def attention_lm_translation_l12():
 
 @registry.register_hparams
 def attention_lm_translation_full_attention():
-  """Version to use for seq2seq."""
+  """使用全注意力的序列到序列版本。
+
+  返回：
+      HParams 对象，包含使用全注意力的序列到序列注意力语言模型超参数配置
+  """
   hparams = attention_lm_translation()
   hparams.prepend_mode = "prepend_inputs_full_attention"
   return hparams

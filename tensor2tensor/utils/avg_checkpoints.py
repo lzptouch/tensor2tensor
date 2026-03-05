@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Script to average values of variables in a list of checkpoint files."""
+"""对检查点文件中的变量值进行平均的脚本。
+
+用于将多个检查点的模型权重进行平均，以提高模型的稳定性和性能。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

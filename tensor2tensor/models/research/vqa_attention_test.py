@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Vqa_attention_baseline tests."""
+"""VQA 注意力基线测试。
+
+测试 VQA 注意力基线模型的功能和性能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,6 +35,10 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 class VqaAttentionBaselineTest(tf.test.TestCase):
 
   def testVqaAttentionBaseline(self):
+    """测试 VQA 注意力基线模型。
+
+    测试 VqaAttentionBaseline 模型的前向传播和损失计算。
+    """
 
     batch_size = 3
     image_size = 448

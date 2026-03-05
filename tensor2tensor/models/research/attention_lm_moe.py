@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Self-attention based language model.
+"""基于自注意力的语言模型。
 
-Like transformer.py, but no encoder
+类似于 transformer.py，但没有编码器
 
 decoder: [Self-Attention, Feed-forward] x n
 
+该模型结合了混合专家（MoE）层的注意力语言模型，
+用于高效的大规模语言建模任务。
 """
 
 from __future__ import absolute_import
@@ -43,7 +45,11 @@ ModeKeys = tf_estimator.ModeKeys  # pylint: disable=invalid-name
 
 
 class AttentionType(object):
-  """Enum of the attention layers types."""
+  """注意力层类型的枚举。
+
+  定义了各种注意力层的类型，包括多头注意力、局部专家、
+  全局 MoE、内存高效注意力、稀疏注意力等。
+  """
   MULTIHEAD = "multihead"
   LOCAL_EXPERTS = "local_experts"
   GLOBAL_MOE = "global_experts"
@@ -79,7 +85,11 @@ LAYER_SYMBOLS = {
 
 @registry.register_model
 class AttentionLmMoe(t2t_model.T2TModel):
-  """Attention net.  See file docstring."""
+  """注意力语言模型与混合专家（MoE）。
+
+  结合了自注意力机制和混合专家层的语言模型，
+  用于高效的大规模语言建模任务。
+  """
 
   @staticmethod
   def use_body_sharded():
@@ -333,17 +343,17 @@ class AttentionLmMoe(t2t_model.T2TModel):
 
 
 def attention_lm_moe_prepare_decoder(targets, hparams):
-  """Prepare one shard of the model for the decoder.
+  """准备解码器的一个分片。
 
-  Args:
-    targets: a Tensor.
-    hparams: run hyperparameters
+  参数：
+      targets: 目标张量
+      hparams: 运行超参数
 
-  Returns:
-    decoder_input: a Tensor, bottom of decoder stack
-    decoder_self_attention_bias: a Tensor, containing large negative values
-    to implement masked attention and possibly biases for diagonal alignments
-    pad_remover (expert_utils.PadRemover): an util object to remove padding
+  返回：
+      decoder_input: 张量，解码器栈的底部
+      decoder_self_attention_bias: 张量，包含大的负值以实现掩码注意力，
+          以及可能用于对角对齐的偏置
+      pad_remover (expert_utils.PadRemover): 用于移除填充的工具对象
   """
   targets_pad_mask = common_attention.embedding_to_padding(targets)
   with tf.name_scope("pad_remover"):
@@ -367,7 +377,15 @@ def attention_lm_moe_prepare_decoder(targets, hparams):
 
 @expert_utils.add_name_scope()
 def get_batch_coordinate(x, axis=0):
-  """Return a flat int32 tensor of shape [1, batch_size*length, 1]."""
+  """返回形状为 [1, batch_size*length, 1] 的扁平 int32 张量。
+
+  参数：
+      x: 输入张量
+      axis: 坐标轴，默认为 0
+
+  返回：
+      批处理坐标张量
+  """
   # Compute the batch coordinate before flattening all batches
   batch_coordinate = tf.expand_dims(
       common_attention.coordinate_tensor(tf.shape(x)[:-1], axis=axis), axis=-1)
@@ -376,15 +394,15 @@ def get_batch_coordinate(x, axis=0):
 
 @expert_utils.add_name_scope()
 def expand_batch_coordinates(bc, length_factor):
-  """Duplicate elements of bc by length_factor.
+  """将 bc 的元素按 length_factor 复制。
 
-  Args:
-    bc (tf.Tensor): int32 tensor of shape [1, length, 1]
-    length_factor (int):
+  参数：
+      bc (tf.Tensor): 形状为 [1, length, 1] 的 int32 张量
+      length_factor (int): 复制因子
 
-  Returns:
-    tf.Tensor: of shape [1, length*length_factor, 1] where every elements has
-      been duplicated length_factor times.
+  返回：
+      tf.Tensor: 形状为 [1, length*length_factor, 1] 的张量，其中每个元素
+          已被复制 length_factor 次
   """
   assert bc.get_shape().as_list() == [1, None, 1]
   # bc has shape [1, length, 1]
@@ -397,17 +415,16 @@ def expand_batch_coordinates(bc, length_factor):
 
 @expert_utils.add_name_scope()
 def remove_pad(x, pad_remover, mode):
-  """Remove padding by concatenating all dimension into one.
+  """通过将所有维度连接成一个来移除填充。
 
-  Args:
-    x (tf.Tensor): input of shape [batch_size, length, depth]
-    pad_remover (obj): a PadRemover object
-    mode (ModeKeys): infer, train or eval. If inference, the padding remover is
-      not applied
+  参数：
+      x (tf.Tensor): 形状为 [batch_size, length, depth] 的输入
+      pad_remover (obj): PadRemover 对象
+      mode (ModeKeys): 推理、训练或评估。如果是推理，不应用填充移除器
 
-  Returns:
-    tf.Tensor of shape [1,length_nonpad,depth] where
-      length_nonpad <= batch_size*length
+  返回：
+      形状为 [1,length_nonpad,depth] 的 tf.Tensor，其中
+          length_nonpad <= batch_size*length
   """
   # Concatenate all tokens (without padding)
   x = expert_utils.flatten_all_but_last(x)
@@ -425,6 +442,17 @@ def remove_pad(x, pad_remover, mode):
 
 @expert_utils.add_name_scope()
 def restore_pad(x, ref_x, pad_remover, mode):
+  """恢复填充。
+
+  参数：
+      x: 输入张量
+      ref_x: 参考张量，用于形状恢复
+      pad_remover: PadRemover 对象
+      mode: 模式
+
+  返回：
+      恢复填充后的张量
+  """
   x = tf.squeeze(x, axis=0)
   if mode != ModeKeys.PREDICT:
     x = pad_remover.restore(x)
@@ -434,22 +462,22 @@ def restore_pad(x, ref_x, pad_remover, mode):
 
 @registry.register_hparams
 def attention_lm_moe_base():
-  """Set of hyperparameters.
+  """基础超参数集。
 
-  suitable for 1 gpu.
-  on lm1b_32k:
-     ~229M params
-     0.9 steps/sec on  [GeForce GTX TITAN X]
+  适用于 1 个 GPU。
+  在 lm1b_32k 上：
+     ~229M 参数
+     在 [GeForce GTX TITAN X] 上 0.9 steps/sec
 
-  Returns:
-    a hparams object
+  返回：
+      HParams 对象，包含注意力语言模型与 MoE 的基础超参数配置
   """
   hparams = common_hparams.basic_params1()
   hparams.hidden_size = 1024
   hparams.batch_size = 8192
   hparams.max_length = 256
   hparams.dropout = 0.0
-  hparams.clip_grad_norm = 0.  # i.e. no gradient clipping
+  hparams.clip_grad_norm = 0.  # 即无梯度裁剪
   hparams.optimizer_adam_epsilon = 1e-9
   hparams.learning_rate_decay_scheme = "noam"
   hparams.learning_rate = 0.1
@@ -463,22 +491,20 @@ def attention_lm_moe_base():
   hparams.num_sampled_classes = 0
   hparams.label_smoothing = 0.0
   hparams.shared_embedding_and_softmax_weights = False
-  hparams.add_hparam("filter_size", 2048)  # Add new ones like this.
+  hparams.add_hparam("filter_size", 2048)  # 像这样添加新的超参数
   hparams.moe_num_experts = 32
-  # attention-related flags
+  # 注意力相关的标志
   hparams.add_hparam("num_heads", 8)
   hparams.add_hparam("attention_key_channels", 0)
   hparams.add_hparam("attention_value_channels", 0)
-  # All hyperparameters ending in "dropout" are automatically set to 0.0
-  # when not in training mode.
+  # 所有以 "dropout" 结尾的超参数在非训练模式下会自动设置为 0.0
   hparams.add_hparam("attention_dropout", 0.0)
   hparams.add_hparam("relu_dropout", 0.0)
   hparams.add_hparam("pos", "timing")  # timing, none
-  hparams.add_hparam("moe_layers", "2")  # comma separated list of layer numbers
-  # moe params. local attention moe.
-  # If attention_layers is set, the num_hidden_layers parameter will be ignored
-  # and each caracter of the string will correspond to one attention
-  # layer type
+  hparams.add_hparam("moe_layers", "2")  # 逗号分隔的层编号列表
+  # moe 参数。局部注意力 moe。
+  # 如果设置了 attention_layers，num_hidden_layers 参数将被忽略
+  # 字符串的每个字符将对应一种注意力层类型
   hparams.add_hparam("attention_layers", "")
   hparams.add_hparam("attention_type", AttentionType.MULTIHEAD)
   hparams.add_hparam("attention_local", False)
@@ -489,21 +515,20 @@ def attention_lm_moe_base():
   hparams.add_hparam("attention_red_factor", 3)
   hparams.add_hparam("attention_block_length", 128)
   hparams.add_hparam("attention_reduction_type", "conv")
-  # Non linearity for the attention reduction. Either "none", or "silu" (
-  # Sigmoid Linear-Unit described in https://arxiv.org/abs/1710.05941)
+  # 注意力减少的非线性。可以是 "none" 或 "silu"（
+  # Sigmoid Linear-Unit，描述于 https://arxiv.org/abs/1710.05941）
   hparams.add_hparam("attention_nonlinearity", "none")
-  # If attention_exp_factor is set, each input to local_expert_attention (of
-  # dimensionality hidden size) is projected into attention_exp_factor smaller
-  # inputs, each of dimensionality attention_exp_inputdim. (otherwise
-  # attention_exp_inputdim is ignored)
+  # 如果设置了 attention_exp_factor，则每个输入到 local_expert_attention（维度为隐藏大小）
+  # 会被投影到 attention_exp_factor 个更小的输入，每个维度为 attention_exp_inputdim。
+  # （否则 attention_exp_inputdim 会被忽略）
   hparams.add_hparam("attention_exp_factor", 0)
   hparams.add_hparam("attention_exp_inputdim", 128)
-  # Key, query and value dimensions for the attention
+  # 注意力的键、查询和值维度
   hparams.add_hparam("attention_kq_size", 128)
   hparams.add_hparam("attention_v_size", 256)
-  # Loss coef for load balancing
+  # 负载平衡的损失系数
   hparams.add_hparam("attention_load_balance", 2e-2)
-  # Locality-sensitive hashing params
+  # 局部敏感哈希参数
   hparams.add_hparam("lsh_num_hyperplanes", 4)
   hparams.add_hparam("lsh_use_map_fn", False)
 
@@ -518,12 +543,16 @@ def attention_lm_moe_base():
 
 @registry.register_hparams
 def attention_lm_moe_base_long_seq():
-  """Hyper parameters specifics for long sequence generation."""
+  """长序列生成的特定超参数。
+
+  返回：
+      HParams 对象，包含长序列生成的超参数配置
+  """
   hparams = attention_lm_moe_base()
 
   hparams.max_length = 0  # max_length == batch_size
   hparams.eval_drop_long_sequences = True
-  hparams.min_length_bucket = 256  # Avoid cyclic problems for big batches
+  hparams.min_length_bucket = 256  # 避免大批次的循环问题
   hparams.use_sepconv = True
 
   return hparams
@@ -531,7 +560,11 @@ def attention_lm_moe_base_long_seq():
 
 @registry.register_hparams
 def attention_lm_moe_base_ae():
-  """Base model with attention expert."""
+  """带有注意力专家的基础模型。
+
+  返回：
+      HParams 对象，包含带有注意力专家的基础模型超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
   hparams.attention_type = AttentionType.LOCAL_EXPERTS
 
@@ -545,7 +578,11 @@ def attention_lm_moe_base_ae():
 
 @registry.register_hparams
 def attention_lm_moe_base_local():
-  """Base model with attention expert."""
+  """带有局部注意力的基础模型。
+
+  返回：
+      HParams 对象，包含带有局部注意力的基础模型超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
   hparams.attention_local = True
   return hparams
@@ -553,9 +590,13 @@ def attention_lm_moe_base_local():
 
 @registry.register_hparams
 def attention_lm_moe_base_hybrid():
-  """Base model with attention expert."""
+  """带有混合注意力的基础模型。
+
+  返回：
+      HParams 对象，包含带有混合注意力的基础模型超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
-  hparams.attention_layers = "hehe"  # Alternate local/expert
+  hparams.attention_layers = "hehe"  # 交替使用局部/专家注意力
   hparams.attention_local = True
 
   # hparams.layer_preprocess_sequence = "n"
@@ -565,8 +606,13 @@ def attention_lm_moe_base_hybrid():
 
 @registry.register_hparams
 def attention_lm_hybrid_v2():
+  """混合注意力模型的 v2 版本。
+
+  返回：
+      HParams 对象，包含混合注意力模型 v2 的超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
-  hparams.attention_layers = "hheh"  # Alternate local/expert
+  hparams.attention_layers = "hheh"  # 交替使用局部/专家注意力
   hparams.attention_local = True
   hparams.attention_moe_k = 6
 
@@ -577,6 +623,11 @@ def attention_lm_hybrid_v2():
 
 @registry.register_hparams
 def attention_lm_16k():
+  """批大小为 16k 的混合注意力模型。
+
+  返回：
+      HParams 对象，包含批大小为 16k 的混合注意力模型超参数配置
+  """
   hparams = attention_lm_hybrid_v2()
   hparams.batch_size = 16384
   return hparams
@@ -584,6 +635,11 @@ def attention_lm_16k():
 
 @registry.register_hparams
 def attention_lm_12k():
+  """批大小为 12k 的混合注意力模型。
+
+  返回：
+      HParams 对象，包含批大小为 12k 的混合注意力模型超参数配置
+  """
   hparams = attention_lm_hybrid_v2()
   hparams.batch_size = 12000
   return hparams
@@ -591,6 +647,11 @@ def attention_lm_12k():
 
 @registry.register_hparams
 def attention_lm_11k():
+  """批大小为 11k 的混合注意力模型。
+
+  返回：
+      HParams 对象，包含批大小为 11k 的混合注意力模型超参数配置
+  """
   hparams = attention_lm_hybrid_v2()
   hparams.batch_size = 11500
   return hparams
@@ -598,11 +659,15 @@ def attention_lm_11k():
 
 @registry.register_hparams
 def attention_lm_ae_extended():
-  """Experiment with the exp_factor params."""
+  """使用 exp_factor 参数的实验。
+
+  返回：
+      HParams 对象，包含使用 exp_factor 参数的实验模型超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
   hparams.attention_layers = "eeee"
   hparams.attention_local = True
-  # hparams.factored_logits=1  # Necessary when the number of expert grow bigger
+  # hparams.factored_logits=1  # 当专家数量变大时必要
   hparams.attention_moe_k = 2
   hparams.attention_exp_factor = 4
   # hparams.attention_exp_inputdim = 128
@@ -614,7 +679,11 @@ def attention_lm_ae_extended():
 
 @registry.register_hparams
 def attention_lm_moe_base_memeff():
-  """Base model with attention expert."""
+  """内存高效的基础模型。
+
+  返回：
+      HParams 对象，包含内存高效基础模型的超参数配置
+  """
   hparams = attention_lm_moe_base_long_seq()
   hparams.use_sepconv = False
 
@@ -631,16 +700,16 @@ def attention_lm_moe_base_memeff():
 
 @registry.register_hparams
 def attention_lm_moe_small():
-  """Cheap model for single-gpu training.
+  """单 GPU 训练的轻量级模型。
 
-  on lm1b_32k:
-     ~312M params
-     1.6 steps/sec on  [GeForce GTX TITAN X]
-     After 50K steps on 8 GPUs (synchronous):
+  在 lm1b_32k 上：
+     ~312M 参数
+     在 [GeForce GTX TITAN X] 上 1.6 steps/sec
+     在 8 个 GPU 上同步训练 50K 步后：
         eval_log_ppl_per_token = 3.31
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含轻量级注意力语言模型与 MoE 的超参数配置
   """
   hparams = attention_lm_moe_base()
   hparams.num_hidden_layers = 4
@@ -653,10 +722,10 @@ def attention_lm_moe_small():
 
 @registry.register_hparams
 def attention_lm_moe_tiny():
-  """Cheap model for debugging.
+  """用于调试的轻量级模型。
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含用于调试的轻量级模型超参数配置
   """
   hparams = attention_lm_moe_small()
   hparams.moe_num_experts = 32
@@ -665,10 +734,10 @@ def attention_lm_moe_tiny():
 
 @registry.register_hparams
 def attention_lm_attention_moe_tiny():
-  """Cheap model for debugging.
+  """用于调试的注意力 MoE 轻量级模型。
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含用于调试的注意力 MoE 轻量级模型超参数配置
   """
   hparams = attention_lm_moe_small()
   hparams.moe_layers = ""
@@ -680,16 +749,16 @@ def attention_lm_attention_moe_tiny():
 
 @registry.register_hparams
 def attention_lm_no_moe_small():
-  """Without the mixture of experts (for comparison).
+  """无混合专家的模型（用于比较）。
 
-  on lm1b_32k:
-     ~45M params
-     2 steps/sec on  [GeForce GTX TITAN X]
-     After 50K steps on 8 GPUs (synchronous):
+  在 lm1b_32k 上：
+     ~45M 参数
+     在 [GeForce GTX TITAN X] 上 2 steps/sec
+     在 8 个 GPU 上同步训练 50K 步后：
         eval_log_ppl_per_token = 3.51
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含无混合专家的轻量级模型超参数配置
   """
   hparams = attention_lm_moe_small()
   hparams.moe_layers = ""
@@ -698,18 +767,17 @@ def attention_lm_no_moe_small():
 
 @registry.register_hparams
 def attention_lm_moe_large():
-  """Large model for distributed training.
+  """用于分布式训练的大型模型。
 
-  Over 1B parameters, so requires multi-gpu training due to memory
-   requirements.
+  超过 1B 参数，因此由于内存要求需要多 GPU 训练。
 
-  on lm1b_32k:
-     After 45K steps on 8 GPUs (synchronous):
+  在 lm1b_32k 上：
+     在 8 个 GPU 上同步训练 45K 步后：
         eval_log_ppl_per_token = 3.18
         eval_ppl_per_word = exp(1.107893 * eval_log_ppl_per_token) = 33.9
 
-  Returns:
-    an hparams object.
+  返回：
+      HParams 对象，包含大型注意力语言模型与 MoE 的超参数配置
   """
   hparams = attention_lm_moe_base()
   hparams.num_hidden_layers = 5
@@ -725,6 +793,11 @@ def attention_lm_moe_large():
 
 @registry.register_hparams
 def attention_lm_moe_large_diet():
+  """使用 diet experts 的大型模型。
+
+  返回：
+      HParams 对象，包含使用 diet experts 的大型模型超参数配置
+  """
   hparams = attention_lm_moe_large()
   hparams.diet_experts = True
   return hparams
@@ -732,7 +805,11 @@ def attention_lm_moe_large_diet():
 
 @registry.register_hparams
 def attention_lm_moe_memory_efficient():
-  """Memory-efficient version."""
+  """内存高效版本。
+
+  返回：
+      HParams 对象，包含内存高效版本的超参数配置
+  """
   hparams = attention_lm_moe_large()
   hparams.diet_experts = True
   hparams.layer_preprocess_sequence = "n"
@@ -747,7 +824,11 @@ def attention_lm_moe_memory_efficient():
 
 @registry.register_hparams
 def attention_lm_moe_32b_diet():
-  """Unnecessarily large model with 32B params - because we can."""
+  """具有 32B 参数的超大模型 - 因为我们可以。
+
+  返回：
+      HParams 对象，包含 32B 参数超大模型的超参数配置
+  """
   hparams = attention_lm_moe_large_diet()
   hparams.moe_hidden_sizes = "16384"
   hparams.moe_num_experts = 1024
@@ -756,7 +837,11 @@ def attention_lm_moe_32b_diet():
 
 @registry.register_hparams
 def attention_lm_moe_24b_diet():
-  """Unnecessarily large model with 24B params - because we can."""
+  """具有 24B 参数的超大模型 - 因为我们可以。
+
+  返回：
+      HParams 对象，包含 24B 参数超大模型的超参数配置
+  """
   hparams = attention_lm_moe_large_diet()
   hparams.moe_hidden_sizes = "12288"
   hparams.moe_num_experts = 1024
@@ -766,7 +851,11 @@ def attention_lm_moe_24b_diet():
 
 @registry.register_hparams
 def attention_lm_moe_translation():
-  """Version to use for seq2seq."""
+  """用于序列到序列任务的版本。
+
+  返回：
+      HParams 对象，包含用于序列到序列任务的注意力语言模型与 MoE 超参数配置
+  """
   hparams = attention_lm_moe_base()
   hparams.layer_preprocess_sequence = "n"
   hparams.layer_postprocess_sequence = "da"
@@ -783,7 +872,11 @@ def attention_lm_moe_translation():
 
 @registry.register_hparams
 def attention_lm_moe_unscramble_base():
-  """Version to use with languagemodel_wiki_scramble1k50."""
+  """用于 languagemodel_wiki_scramble1k50 的版本。
+
+  返回：
+      HParams 对象，包含用于文本解扰任务的注意力语言模型与 MoE 超参数配置
+  """
   hparams = attention_lm_no_moe_small()
   hparams.use_inputs = True
   hparams.min_length_bucket = 1024

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for the SNLI data-set."""
+"""SNLI（Stanford Natural Language Inference）数据集的数据生成器。
+
+包含用于处理 Stanford 自然语言推理数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -49,7 +52,12 @@ _SNLI_URL = 'https://nlp.stanford.edu/projects/snli/' + _SNLI_ZIP
 
 
 def _download_and_parse_dataset(tmp_dir, train):
-  """Downloads and prepairs the dataset to be parsed by the data_generator."""
+  """下载并准备数据集以供数据生成器解析。
+
+  参数：
+      tmp_dir: 临时目录
+      train: 是否为训练集
+  """
   file_path = generator_utils.maybe_download(tmp_dir, _SNLI_ZIP, _SNLI_URL)
   zip_ref = zipfile.ZipFile(file_path, 'r')
   zip_ref.extractall(tmp_dir)
@@ -61,7 +69,14 @@ def _download_and_parse_dataset(tmp_dir, train):
 
 
 def _get_tokens_and_tags(parse_str):
-  """Parse str to tokens and pos tags."""
+  """解析字符串为标记和词性标签。
+
+  参数：
+      parse_str: 要解析的字符串
+
+  返回：
+      标记列表
+  """
   tokens = []
   parse_split = parse_str.split(' ')
   for p in parse_split:

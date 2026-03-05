@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Neural Assistant."""
+"""Neural Assistant 模型。
+
+实现神经助手模型，用于对话系统和任务型对话。
+该模型基于 Transformer 架构，集成了知识图谱嵌入和语言建模。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,9 +33,19 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class NeuralAssistant(transformer.Transformer):
-  """Attention net.  See file docstring."""
+  """注意力网络。
+
+  实现神经助手模型，用于对话系统和任务型对话。
+  该模型基于 Transformer 架构，集成了知识图谱嵌入和语言建模。
+  """
 
   def __init__(self, *args, **kwargs):
+    """初始化 Neural Assistant 模型。
+
+    参数：
+        *args: 位置参数
+        **kwargs: 关键字参数
+    """
     super(NeuralAssistant, self).__init__(*args, **kwargs)
     self.attention_weights = dict()  # For visualizing attention heads.
 

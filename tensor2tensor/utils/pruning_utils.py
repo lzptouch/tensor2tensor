@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities to assist in pruning models."""
+"""辅助剪枝模型的工具函数。
+
+提供模型权重剪枝的工具函数和策略实现。
+"""
 
 import numpy as np
 
@@ -25,7 +28,15 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_pruning_strategy
 def weight(w, sparsity):
-  """Weight-level magnitude pruning."""
+  """权重级别的幅度剪枝。
+
+  参数：
+      w: 权重张量
+      sparsity: 稀疏度（0 到 1 之间）
+
+  返回：
+      剪枝后的权重
+  """
   w_shape = common_layers.shape_list(w)
   k = int(np.prod(w_shape[:-1]))
   count = tf.to_int32(k * sparsity)
@@ -35,7 +46,15 @@ def weight(w, sparsity):
 
 @registry.register_pruning_strategy
 def unit(w, sparsity):
-  """Unit-level magnitude pruning."""
+  """单元级别的幅度剪枝。
+
+  参数：
+      w: 权重张量
+      sparsity: 稀疏度（0 到 1 之间）
+
+  返回：
+      剪枝后的权重
+  """
   w_shape = common_layers.shape_list(w)
   count = tf.to_int32(w_shape[-1] * sparsity)
   mask = common_layers.unit_targeting(w, count)
@@ -43,7 +62,17 @@ def unit(w, sparsity):
 
 
 def sparsify(sess, eval_model, pruning_strategy, pruning_params):
-  """Prune the weights of a model and evaluate."""
+  """剪枝模型的权重并评估。
+
+  参数：
+      sess: TensorFlow 会话
+      eval_model: 评估模型性能的函数
+      pruning_strategy: 剪枝策略函数
+      pruning_params: 剪枝参数对象
+
+  返回：
+      无返回值，但会记录不同稀疏度下的准确率
+  """
   weights = tf.trainable_variables()
 
   def should_prune(name):

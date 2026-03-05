@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Models for gene expression from DNA."""
+"""DNA 基因表达的模型。
+
+实现用于从 DNA 序列预测基因表达的深度学习模型，
+基于"Basenji"模型，用于基因组学研究。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -30,23 +34,30 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class GeneExpressionConv(t2t_model.T2TModel):
-  """Gene expression conv net.
+  """基因表达卷积网络。
 
-  Based on "Basenji" model from
+  基于"Basenji"模型，来自
   http://www.biorxiv.org/content/early/2017/07/10/161851
 
-  Uses layer_norm instead of batch_norm.
+  使用 layer_norm 而不是 batch_norm。
 
-  Model expects that if targets are of length m, inputs are of length 32*m.  The
-  original data expected that inputs would be of length 128*m, but the data has
-  been preprocessed to chunk every 4 bases into 1 ID (see
-  data_generators/gene_expression.py).
+  模型期望如果目标长度为 m，输入长度为 32*m。原始数据期望
+  输入长度为 128*m，但数据已经过预处理，将每 4 个碱基
+  分组成 1 个 ID（参见 data_generators/gene_expression.py）。
 
-  The magnitude of the length reduction is controlled by the pooling sizes
-  (hparams.pooling_windows) at each conv layer (hparams.num_conv_layers).
+  长度缩减的幅度由每个卷积层的池化窗口大小
+  （hparams.pooling_windows）控制（hparams.num_conv_layers）。
   """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     inputs = features["inputs"]
     inputs.get_shape().assert_has_rank(4)
 

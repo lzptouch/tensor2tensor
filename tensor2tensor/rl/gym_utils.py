@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for interacting with Gym classes."""
+"""与 Gym 类交互的工具函数。
+
+提供用于处理和包装 Gym 环境的辅助类，包括动作粘性、
+帧跳过、奖励裁剪等功能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,9 +33,20 @@ from PIL import Image
 
 
 class StickyActionEnv(gym.Wrapper):
-  """Based on openai/atari-reset implementation."""
+  """粘性动作环境包装器。
+
+  基于 openai/atari-reset 实现，用于模拟 Atari 环境中的动作粘性。
+  动作粘性是指在某些帧中重复执行上一个动作，模拟真实 Atari 游戏中的
+  控制器响应延迟。
+  """
 
   def __init__(self, env, p=0.25):
+    """初始化粘性动作环境。
+
+    参数：
+        env: 要包装的 Gym 环境
+        p: 重复上一个动作的概率，默认为 0.25
+    """
     gym.Wrapper.__init__(self, env)
     self.p = p
     self.last_action = 0
@@ -48,10 +63,19 @@ class StickyActionEnv(gym.Wrapper):
 
 
 class MaxAndSkipEnv(gym.Wrapper):
-  """Same wrapper as in OpenAI baselines for comparability of results."""
+  """最大池化和帧跳过环境包装器。
+
+  与 OpenAI baselines 中的包装器相同，以确保结果的可比性。
+  该包装器重复执行动作多次，然后返回观测值的最大池化结果。
+  """
 
   def __init__(self, env, skip=4):
-    """Return only every `skip`-th frame."""
+    """返回每 `skip` 帧。
+
+    参数：
+        env: 要包装的 Gym 环境
+        skip: 跳过的帧数，默认为 4
+    """
     gym.Wrapper.__init__(self, env)
     observation_space = env.observation_space
     # Most recent raw observations (for max pooling across time steps).
@@ -84,23 +108,22 @@ class MaxAndSkipEnv(gym.Wrapper):
 
 
 class ActionDiscretizeWrapper(gym.ActionWrapper):
-  """Wraps an environment with continuous actions and discretizes them.
+  """包装具有连续动作的环境并将其离散化。
 
-  This is a simplified adaptation of ActionDiscretizeWrapper
-  from tf_agents.
+  这是 tf_agents 中 ActionDiscretizeWrapper 的简化版本。
+  该包装器将连续动作空间转换为离散动作空间，便于使用离散动作的算法。
   """
 
   def __init__(self, env, num_actions):
-    """Constructs a wrapper for discretizing the action space.
+    """构造用于离散化动作空间的包装器。
 
-    Args:
-      env: environment to wrap.
-      num_actions: A np.array of the same shape as the environment's
-        action_spec. Elements in the array specify the number of actions to
-        discretize to for each dimension.
+    参数：
+        env: 要包装的环境
+        num_actions: 与环境动作空间形状相同的 np.array。数组中的元素
+            指定每个维度要离散化的动作数量
 
-    Raises:
-      ValueError: IF the action_spec shape and the limits shape are not equal.
+    异常：
+        ValueError: 如果 action_spec 形状和限制形状不相等
     """
 
     if not isinstance(env.action_space, gym.spaces.box.Box):

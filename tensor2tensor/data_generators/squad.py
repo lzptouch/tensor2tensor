@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for SquaAD (https://rajpurkar.github.io/SQuAD-explorer/).
+"""SQuAD 数据集的数据生成器（https://rajpurkar.github.io/SQuAD-explorer/）。
+
+包含用于生成 Stanford Question Answering Dataset (SQuAD) 数据的函数。
 """
 
 from __future__ import absolute_import

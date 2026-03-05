@@ -13,7 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Neural GPU model and its variants."""
+"""Neural GPU 模型及其变体。
+
+实现 Neural GPU 模型，这是一种基于卷积门控循环单元的神经图灵机变体，
+用于学习算法和序列处理任务。
+
+功能说明：
+- 实现 Neural GPU 架构
+- 支持卷积门控循环单元（ConvGRU）
+- 适用于算法学习和序列推理任务
+- 提供可微分神经网络计算能力
+- 支持端到端的序列到序列映射
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,10 +40,26 @@ import tensorflow.compat.v1 as tf
 
 
 def neural_gpu_body(inputs, hparams, name=None):
-  """The core Neural GPU."""
+  """核心 Neural GPU 实现。
+  
+  Args:
+    inputs: 输入张量，形状为 [batch_size, time_steps, hidden_dim]
+    hparams: 超参数对象，包含 num_hidden_layers、dropout 等配置
+    name: TensorFlow 变量作用域名称
+  
+  Returns:
+    Neural GPU 的输出张量，具有与输入相同的形状
+  
+  功能说明：
+  - 实现 Neural GPU 的核心计算逻辑
+  - 使用卷积 GRU 单元进行状态更新
+  - 支持多层堆叠
+  - 应用 dropout 正则化
+  """
   with tf.variable_scope(name, "neural_gpu"):
 
     def step(state, inp):  # pylint: disable=missing-docstring
+      # 对状态应用 dropout
       x = tf.nn.dropout(state, 1.0 - hparams.dropout)
       for layer in range(hparams.num_hidden_layers):
         x = common_layers.conv_gru(

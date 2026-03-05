@@ -1,4 +1,8 @@
-"""Install tensor2tensor."""
+"""安装 tensor2tensor 库。
+
+Tensor2Tensor (T2T) 是一个深度学习模型和数据集库，
+旨在使深度学习更易于访问并加速机器学习研究。
+"""
 
 from setuptools import find_packages
 from setuptools import setup

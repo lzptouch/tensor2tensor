@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Librispeech dataset."""
+"""LibriSpeech 语音识别数据集。
+
+包含用于处理 LibriSpeech 英语语音识别数据集的函数和类。
+"""
 
 import os
 import tarfile

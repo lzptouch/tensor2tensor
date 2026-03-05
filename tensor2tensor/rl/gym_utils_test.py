@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tensor2tensor.rl.gym_utils."""
+"""tensor2tensor.rl.gym_utils 的测试。
+
+用于测试 Gym 工具函数的功能和正确性。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""NAT Transformer from https://arxiv.org/abs/1805.11063."""
+"""NAT Transformer。
+
+来自 https://arxiv.org/abs/1805.11063 的非自回归 Transformer 模型。
+
+NAT（Non-Autoregressive Transformer）是一种能够并行生成所有输出 token 的模型，
+与传统的自回归模型不同，它不需要按顺序生成输出，从而显著提高推理速度。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -30,7 +36,17 @@ from tensorflow.python.training import moving_averages  # pylint: disable=g-dire
 
 
 def init_vq_bottleneck(bottleneck_size, hidden_size):
-  """Get lookup table for VQ bottleneck."""
+  """获取 VQ 瓶颈的查找表。
+
+  参数：
+      bottleneck_size: 瓶颈大小
+      hidden_size: 隐藏层大小
+
+  返回：
+      means: 均值向量
+      ema_means: 指数移动平均均值
+      ema_count: 指数移动平均计数
+  """
   means = tf.get_variable(
       name="means",
       shape=[bottleneck_size, hidden_size],
@@ -50,7 +66,16 @@ def init_vq_bottleneck(bottleneck_size, hidden_size):
 
 
 def vq_nearest_neighbor(x, hparams):
-  """Find the nearest element in means to elements in x."""
+  """在 means 中找到与 x 中元素最近的元素。
+
+  参数：
+      x: 输入张量
+      hparams: 超参数对象
+
+  返回：
+      x_means_hot: 热编码的均值选择
+      e_loss: 量化损失
+  """
   bottleneck_size = 2**hparams.bottleneck_bits
   means = hparams.means
   x_norm_sq = tf.reduce_sum(tf.square(x), axis=-1, keepdims=True)
@@ -71,7 +96,15 @@ def vq_nearest_neighbor(x, hparams):
 
 
 def vq_discrete_bottleneck(x, hparams):
-  """Simple vector quantized discrete bottleneck."""
+  """简单的矢量量化离散瓶颈。
+
+  参数：
+      x: 输入张量
+      hparams: 超参数对象
+
+  返回：
+      离散瓶颈表示和损失
+  """
   tf.logging.info("Using EMA with beta = {}".format(hparams.beta))
   bottleneck_size = 2**hparams.bottleneck_bits
   x_shape = common_layers.shape_list(x)

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Computes the metrics for video prediction and generation."""
+"""计算视频预测和生成的指标。
+
+提供视频质量评估工具，包括 PSNR、SSIM 等指标的计算。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,19 +39,19 @@ def load_image_map_function(filename, frame_shape):
 
 
 def load_videos(template, video_length, frame_shape):
-  """Loads videos from files.
+  """从文件加载视频。
 
-  Args:
-    template: template string for listing the image files.
-    video_length: length of the video.
-    frame_shape: shape of each frame.
+  参数：
+      template: 用于列出图像文件的模板字符串
+      video_length: 视频长度
+      frame_shape: 每帧的形状
 
-  Returns:
-    dataset: the tf dataset frame by frame.
-    dataset_len: number of the items which is the number of image files.
+  返回：
+      dataset: 逐帧的 tf dataset
+      dataset_len: 项目数量，即图像文件数量
 
-  Raises:
-    ValueError: if no files found.
+  异常：
+      ValueError: 如果未找到文件
   """
   filenames = tf.gfile.Glob(template)
   if not filenames:
@@ -91,14 +94,15 @@ def save_results(results, output_dir, problem_name):
 
 
 def psnr_and_ssim(output, target):
-  """Compute the PSNR and SSIM.
+  """计算 PSNR 和 SSIM 指标。
 
-  Args:
-    output: 4-D Tensor, shape=(num_frames, height, width, num_channels)
-    target: 4-D Tensor, shape=(num_frames, height, width, num_channels)
-  Returns:
-    psnr: 1-D Tensor, shape=(num_frames,)
-    ssim: 1-D Tensor, shape=(num_frames,)
+  参数：
+      output: 4-D 张量，形状= (num_frames, height, width, num_channels)
+      target: 4-D 张量，形状= (num_frames, height, width, num_channels)
+
+  返回：
+      psnr: 1-D 张量，形状= (num_frames,)
+      ssim: 1-D 张量，形状= (num_frames,)
   """
   output = tf.cast(output, dtype=tf.int32)
   target = tf.cast(target, dtype=tf.int32)

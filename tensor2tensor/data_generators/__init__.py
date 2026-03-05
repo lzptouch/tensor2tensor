@@ -13,3 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""数据生成器模块。
+
+包含用于生成各种数据集的生成器，包括文本、图像、音频、视频等。
+
+功能说明：
+- 提供多种数据集的生成器实现
+- 支持 NLP 任务（翻译、摘要、问答等）
+- 支持视觉任务（图像分类、目标检测等）
+- 支持音频和视频数据处理
+- 提供数据预处理和编码工具
+"""
+

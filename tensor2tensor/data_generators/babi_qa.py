@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Data generators for bAbi question answering dataset.
+"""bAbi 问答数据集的数据生成器。
 
-
-The dataset consists of 20 tasks for testing text understanding and reasoning
-in the bAbI project (https://research.fb.com/downloads/babi/). The aim is that
-each task tests a unique aspect of text and reasoning, and hence test different
-capabilities of learning models. For more information check the following paper:
-Jason Weston, Antoine Bordes, Sumit Chopra and Tomas Mikolov. Towards AI
-Complete Question Answering: A Set of Prerequisite Toy Tasks, arXiv:1502.05698.
-Available at: http://arxiv.org/abs/1502.05698
-
+该数据集由 20 个任务组成，用于测试 bAbI 项目中的文本理解和推理能力
+（https://research.fb.com/downloads/babi/）。目标是每个任务测试文本和推理的独特方面，
+从而测试学习模型的不同能力。有关更多信息，请查看以下论文：
+Jason Weston, Antoine Bordes, Sumit Chopra 和 Tomas Mikolov。《迈向 AI 完整问答：
+一组先决条件玩具任务》，arXiv:1502.05698。
+网址：http://arxiv.org/abs/1502.05698
 """
 
 from __future__ import absolute_import
@@ -52,43 +49,43 @@ _DIR_NAME = "tasks_1-20_v1-2"
 _TAR = _DIR_NAME + ".tar.gz"
 _URL = "http://www.thespermwhale.com/jaseweston/babi/" + _TAR
 
+# 任务字典，将任务编号映射到任务名称
 _TASKS = {
-    "qa0": "qa0_all-tasks",
-    "qa1": "qa1_single-supporting-fact",
-    "qa2": "qa2_two-supporting-facts",
-    "qa3": "qa3_three-supporting-facts",
-    "qa4": "qa4_two-arg-relations",
-    "qa5": "qa5_three-arg-relations",
-    "qa6": "qa6_yes-no-questions",
-    "qa7": "qa7_counting",
-    "qa8": "qa8_lists-sets",
-    "qa9": "qa9_simple-negation",
-    "qa10": "qa10_indefinite-knowledge",
-    "qa11": "qa11_basic-coreference",
-    "qa12": "qa12_conjunction",
-    "qa13": "qa13_compound-coreference",
-    "qa14": "qa14_time-reasoning",
-    "qa15": "qa15_basic-deduction",
-    "qa16": "qa16_basic-induction",
-    "qa17": "qa17_positional-reasoning",
-    "qa18": "qa18_size-reasoning",
-    "qa19": "qa19_path-finding",
-    "qa20": "qa20_agents-motivations"
+    "qa0": "qa0_all-tasks",  # 所有任务
+    "qa1": "qa1_single-supporting-fact",  # 单一支持事实
+    "qa2": "qa2_two-supporting-facts",  # 两个支持事实
+    "qa3": "qa3_three-supporting-facts",  # 三个支持事实
+    "qa4": "qa4_two-arg-relations",  # 双参数关系
+    "qa5": "qa5_three-arg-relations",  # 三参数关系
+    "qa6": "qa6_yes-no-questions",  # 是/否问题
+    "qa7": "qa7_counting",  # 计数
+    "qa8": "qa8_lists-sets",  # 列表和集合
+    "qa9": "qa9_simple-negation",  # 简单否定
+    "qa10": "qa10_indefinite-knowledge",  # 不确定知识
+    "qa11": "qa11_basic-coreference",  # 基本共指
+    "qa12": "qa12_conjunction",  # 连词
+    "qa13": "qa13_compound-coreference",  # 复合共指
+    "qa14": "qa14_time-reasoning",  # 时间推理
+    "qa15": "qa15_basic-deduction",  # 基本演绎
+    "qa16": "qa16_basic-induction",  # 基本归纳
+    "qa17": "qa17_positional-reasoning",  # 位置推理
+    "qa18": "qa18_size-reasoning",  # 大小推理
+    "qa19": "qa19_path-finding",  # 路径查找
+    "qa20": "qa20_agents-motivations"  # 代理动机
 }
 
-# A list of problem names that are registered by this module. This will get
-# populated at module load time in the code at the bottom of this file.
+# 由此模块注册的问题名称列表。这将在本文件底部的模块加载时代码中填充。
 REGISTERED_PROBLEMS = []
 
 
 def _normalize_string(raw_str):
-  """Normalizes the string using tokenizer.encode.
+  """使用 tokenizer.encode 规范化字符串。
 
-  Args:
-    raw_str: the input string
+  参数：
+      raw_str: 输入字符串
 
-  Returns:
-   A string which is ready to be tokenized using split()
+  返回：
+      准备好使用 split() 进行分词的字符串
   """
   return " ".join(
       token.strip()

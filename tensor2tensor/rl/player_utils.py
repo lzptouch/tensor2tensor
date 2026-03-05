@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for player.py."""
+"""player.py 的工具函数。
+
+为游戏播放器提供辅助功能，包括模拟环境创建、策略加载、
+帧处理等功能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -43,34 +47,32 @@ FLAGS = flags.FLAGS
 
 
 class SimulatedGymEnv(gym.Env):
-  """Gym environment, running with world model.
+  """使用世界模型运行的 Gym 环境。
 
-  Allows passing custom initial frames.
+  允许传递自定义初始帧。
 
-  Examples:
-    Setup simulated env from some point of real rollout.
+  示例：
+    从真实轨迹的某个点设置模拟环境。
       >>> sim_env = SimulatedGymEnv(setable_initial_frames=True, **kwargs)
       >>> real_env = FlatBatchEnv(T2TGymEnv(...))
       >>> while ...:
       >>>   ob, _, _, _ = real_env.step(action)
       >>>   sim_env.add_to_initial_stack(ob)
       >>> sim_env.reset()
-      >>> # Continue sim_env rollout.
+      >>> # 继续 sim_env 轨迹。
   """
 
   def __init__(self, real_env, world_model_dir, hparams, random_starts,
                setable_initial_frames=False):
-    """Init.
+    """初始化。
 
-    Args:
-       real_env: gym environment.
-       world_model_dir: path to world model checkpoint directory.
-       hparams: hparams for rlmb pipeline.
-       random_starts: if restart world model from random frames, or only
-         from initial ones (from beginning of episodes). Valid only when
-         `setable_initial_fames` set to False.
-       setable_initial_frames: if True, initial_frames for world model should be
-         set by `add_to_initial_stack`.
+    参数：
+        real_env: gym 环境
+        world_model_dir: 世界模型检查点目录的路径
+        hparams: rlmb 流程的超参数
+        random_starts: 是否从随机帧重启世界模型，或仅从初始帧（从回合开始）重启。
+            仅在 `setable_initial_fames` 设置为 False 时有效
+        setable_initial_frames: 如果为 True，世界模型的初始帧应通过 `add_to_initial_stack` 设置
     """
 
     self._setable_initial_frames = setable_initial_frames

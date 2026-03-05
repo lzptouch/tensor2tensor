@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hook to partially load a checkpoint."""
+"""部分加载检查点的钩子。
+
+用于从检查点部分加载模型权重的会话运行钩子实现。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,23 +25,21 @@ import tensorflow.compat.v1 as tf
 
 
 class PartialCheckpointLoad(tf.train.SessionRunHook):
-  """Partially load train_variables from a checkpoint.
+  """从检查点部分加载训练变量。
 
-  Hook used to load each variable saved in checkpoint into the graph. It
-  will ignore any additional variables present in the graph that are not
-  saved in the checkpoint. (Note: The loaded variables include ADAM/training
-  variables, if they exist in the checkpoint)
-  Can perform mapping if the base scopename for graph variables is different
-  from the checkpoint variables.
+  用于将检查点中保存的每个变量加载到图中。
+  它将忽略图中存在于检查点中未保存的额外变量。
+  （注意：加载的变量包括 ADAM/训练变量，如果它们存在于检查点中）
+  如果图中变量的基础作用域名与检查点变量不同，可以执行映射。
   """
 
   def __init__(self, hook_context, chk_scopename, graph_scopename):
-    """Initialize the hook with chkp directory and scopenames.
+    """使用检查点目录和作用域名初始化钩子。
 
-    Args:
-      hook_context: HookContext object containing hparams.
-      chk_scopename: Base scopename of variables in the checkpoint being loaded
-      graph_scopename: Base scopename of variables in current graph
+    参数：
+        hook_context: 包含超参数的 HookContext 对象
+        chk_scopename: 正在加载的检查点中变量的基础作用域名
+        graph_scopename: 当前图中变量的基础作用域名
     """
     self.checkpoint_path = hook_context.hparams.partial_load_checkpoint
     self.chk_scopename = chk_scopename

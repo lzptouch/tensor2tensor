@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Launch on GCP's ML Engine."""
+"""在 GCP 的 ML Engine 上启动任务。
+
+提供在 Google Cloud Platform 机器学习引擎上部署和运行 tensor2tensor 模型的工具。
+"""
 
 import datetime
 import os

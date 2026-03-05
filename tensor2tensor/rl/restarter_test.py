@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for rl_utils."""
+"""rl_utils 的测试。
+
+用于测试 RL 工具函数和重启器的功能和正确性。
+"""
 
 import os
 

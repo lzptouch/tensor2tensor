@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generator for Wikipedia title to article dataset."""
+"""维基百科标题到文章数据集的数据生成器。
+
+包含用于生成维基百科数据集的类和函数。
+
+功能说明：
+- 提供维基百科数据集的生成工具
+- 支持 XML 格式解析和处理
+- 提供语言建模任务的数据准备
+- 支持文本分块和标记化
+- 集成词汇表构建
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,20 +44,31 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_problem
 class LanguagemodelWikiXmlV8kL1k(text_problems.ChoppedTextProblem):
-  """A language model on English Wikipedia.
-
-  XML dump is chopped arbitrarily into sequences of length 1024 tokens,
-  without regard to article boundaries.
+  """英语维基百科的语言模型问题。
+  
+  XML 转储被任意分割为长度为 1024 个标记的序列，
+  不考虑文章边界。
+  
+  功能说明：
+  - 继承自 ChoppedTextProblem
+  - 处理维基百科 XML 格式数据
+  - 生成固定长度的文本序列用于语言建模
+  - 使用 8k 词汇表和 1024 标记长度
   """
 
   def maybe_prepare_text(self, tmp_dir):
-    """Download corpus if necessary, decompress, split into multiple text files.
-
+    """下载语料库（如果需要），解压，分割为多个文本文件。
+    
     Args:
-      tmp_dir: directory containing dataset.
-
+      tmp_dir: 包含数据集的临时目录
+    
     Returns:
-      list of filepaths for local text files.
+      本地文本文件的文件路径列表
+    
+    功能说明：
+    - 检查并下载维基百科 XML 转储文件
+    - 解压缩 gz 格式文件
+    - 将大型 XML 文件分割为较小的文本块
     """
     compressed_filename = os.path.basename(self.corpus_url)
     compressed_filepath = os.path.join(tmp_dir, compressed_filename)

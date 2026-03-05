@@ -13,25 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates a RevNet with the bottleneck residual function.
+"""创建具有瓶颈残差函数的 RevNet。
 
-Implements the following equations described in the RevNet paper:
+实现 RevNet 论文中描述的以下方程：
 y1 = x1 + f(x2)
 y2 = x2 + g(y1)
 
-However, in practice, the authors use the following equations to downsample
-tensors inside a RevNet block:
+然而，在实践中，作者使用以下方程在 RevNet 块内下采样张量：
 
 y1 = h(x1) + f(x2)
 y2 = h(x2) + g(y1)
 
-In this case, h is the downsampling function used to change number of channels.
+在这种情况下，h 是用于更改通道数的下采样函数。
 
-These modified equations are evident in the authors' code online:
+这些修改后的方程在作者的在线代码中很明显：
 https://github.com/renmengye/revnet-public
 
-For reference, the original paper can be found here:
+供参考，原始论文可以在这里找到：
 https://arxiv.org/pdf/1707.04585.pdf
+
+RevNet（可逆网络）是一种可逆的残差网络，允许在前向传播期间
+不存储激活，从而显著减少内存使用。
 """
 
 import functools
@@ -72,24 +74,21 @@ CONFIG = {'2d': {'conv': wrapped_partial(
 
 def f(x, depth1, depth2, dim='2d', first_batch_norm=True, stride=1,
       training=True, bottleneck=True, padding='SAME'):
-  """Applies residual function for RevNet.
+  """为 RevNet 应用残差函数。
 
-  Args:
-    x: input tensor
-    depth1: Number of output channels for the first and second conv layers.
-    depth2: Number of output channels for the third conv layer.
-    dim: '2d' if 2-dimensional, '3d' if 3-dimensional.
-    first_batch_norm: Whether to keep the first batch norm layer or not.
-      Typically used in the first RevNet block.
-    stride: Stride for the first conv filter. Note that this particular
-      RevNet architecture only varies the stride for the first conv
-      filter. The stride for the second conv filter is always set to 1.
-    training: True for train phase, False for eval phase.
-    bottleneck: If true, apply bottleneck 1x1 down/up sampling.
-    padding: Padding for each conv layer.
+  参数：
+      x: 输入张量
+      depth1: 第一和第二个卷积层的输出通道数
+      depth2: 第三个卷积层的输出通道数
+      dim: '2d' 表示 2 维，'3d' 表示 3 维
+      first_batch_norm: 是否保留第一个批量归一化层，通常用于第一个 RevNet 块
+      stride: 第一个卷积滤波器的步幅。注意这个 RevNet 架构只为第一个卷积滤波器改变步幅
+      training: True 表示训练阶段，False 表示评估阶段
+      bottleneck: 如果为 true，应用瓶颈 1x1 下采样/上采样
+      padding: 每个卷积层的填充方式
 
-  Returns:
-    Output tensor after applying residual function for RevNet.
+  返回：
+      应用 RevNet 残差函数后的输出张量
   """
   conv = CONFIG[dim]['conv']
   with tf.variable_scope('f', reuse=tf.AUTO_REUSE):

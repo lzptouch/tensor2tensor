@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common classes for automatic speech recognition (ASR) datasets.
+"""自动语音识别（ASR）数据集的通用类。
 
-The audio import uses sox to generate normalized waveforms, please install
-it as appropriate (e.g. using apt-get or yum).
+音频导入使用 sox 生成标准化的波形，请根据需要安装
+（例如使用 apt-get 或 yum）。
 """
 
 import numpy as np
@@ -33,16 +33,26 @@ import tensorflow.compat.v1 as tf
 
 
 class ByteTextEncoderWithEos(text_encoder.ByteTextEncoder):
-  """Encodes each byte to an id and appends the EOS token."""
+  """将每个字节编码为 id 并附加 EOS 标记。"""
 
   def encode(self, s):
+    """编码字符串为字节 id 列表，并在末尾添加 EOS 标记。"""
     return super(ByteTextEncoderWithEos, self).encode(s) + [text_encoder.EOS_ID]
 
 
 class SpeechRecognitionProblem(problem.Problem):
-  """Base class for speech recognition problems."""
+  """语音识别问题的基类。
+
+  用于处理各种语音识别数据集的基类。
+  """
 
   def hparams(self, defaults, model_hparams):
+    """添加语音识别相关的超参数。
+
+    参数：
+        defaults: 默认超参数
+        model_hparams: 模型超参数
+    """
     def add_if_absent(p, attr, value):
       if not hasattr(p, attr):
         p.add_hparam(attr, value)

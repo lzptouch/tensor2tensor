@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer with auxiliary losses from https://arxiv.org/abs/1803.00144."""
+"""带有辅助损失的 Transformer。
+
+来自 https://arxiv.org/abs/1803.00144 的带有辅助损失的 Transformer 模型。
+
+该模型通过添加辅助损失来改进 Transformer 的训练，
+这些辅助损失可以帮助模型学习更好的表示。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,19 +33,19 @@ import tensorflow.compat.v1 as tf
 
 
 def shift_and_pad(tensor, shift, axis=0):
-  """Shifts and pads with zero along an axis.
+  """沿轴移动并用零填充。
 
-  Example:
-    shift_and_pad([1, 2, 3, 4], 2)  --> [0, 0, 1, 2]
-    shift_and_pad([1, 2, 3, 4], -2) --> [3, 4, 0, 0]
+  示例：
+      shift_and_pad([1, 2, 3, 4], 2)  --> [0, 0, 1, 2]
+      shift_and_pad([1, 2, 3, 4], -2) --> [3, 4, 0, 0]
 
-  Args:
-    tensor: Tensor; to be shifted and padded.
-    shift: int; number of positions to shift by.
-    axis: int; along which axis to shift and pad.
+  参数：
+      tensor: 要移动和填充的张量
+      shift: 整数，移动的步数
+      axis: 整数，沿哪个轴移动和填充
 
-  Returns:
-    A Tensor with the same shape as the input tensor.
+  返回：
+      与输入张量形状相同的张量
   """
   shape = tensor.shape
   rank = len(shape)
@@ -66,20 +72,23 @@ def shift_and_pad(tensor, shift, axis=0):
 
 @registry.register_model
 class TransformerAux(transformer.Transformer):
-  """Attention net. See file docstring."""
+  """注意力网络。
+
+  带有辅助损失的 Transformer 模型，
+  通过辅助损失改进训练效果。
+  """
 
   def _extract_shift_values(self):
-    """Parses the shift string.
+    """解析 shift 字符串。
 
-    The hparams should contain the key shift_values, which maps to a
-    comma-separated string of integers. These integers specify the number of
-    timesteps to predict/reconstruct to compute auxiliary losses.
+    超参数应包含 shift_values 键，映射到逗号分隔的整数字符串。
+    这些整数指定要预测/重建以计算辅助损失的时间步数。
 
-    For instance, "-4,2,6" means to reconstruct the target 4 steps before and
-    predict the targets 2 steps and 6 steps ahead.
+    例如，"-4,2,6"表示重建 4 步之前的目标，并预测
+    2 步和 6 步之后的目标。
 
-    Returns:
-      List of int != 0 shift values to compute the auxiliary losses.
+    返回：
+        要计算辅助损失的移位值列表（非零整数）
     """
     shift_values_str = self._hparams.get("shift_values", "")
     shift_values = [int(x) for x in shift_values_str.split(",")]
@@ -91,23 +100,21 @@ class TransformerAux(transformer.Transformer):
     return shift_values
 
   def auxiliary_loss(self, body_output, features, shift):
-    """Auxiliary predict loss.
+    """辅助预测损失。
 
-    Args:
-      body_output: Tensor with shape [batch_size, decoder_length, hidden_dim].
-      features: Map of features to the model. Must contain the following:
-          "targets": Target decoder outputs.
-              [batch_size, decoder_length, 1, hidden_dim]
-      shift: int != 0, amount to shift/pad the target sequence.
-        If shift > 0, it represents the number of previous timesteps to
-        reconstruct; if shift < 0, it represents the number of future timesteps
-        to predict.
+    参数：
+        body_output: 形状为 [batch_size, decoder_length, hidden_dim] 的张量
+        features: 模型的特征映射，必须包含：
+            "targets": 目标解码器输出，形状为 [batch_size, decoder_length, 1, hidden_dim]
+        shift: 非零整数，移动/填充目标序列的量。
+            如果 shift > 0，表示要重建的先前时间步数；
+            如果 shift < 0，表示要预测的未来时间步数
 
-    Returns:
-      A 2-tuple of the numerator and denominator of the cross-entropy loss.
+    返回：
+        交叉熵损失的分子和分母的元组
 
-    Raises:
-      ValueError: if features does not contain a targets_raw tensor.
+    异常：
+        ValueError: 如果 features 不包含 targets_raw 张量
     """
     assert isinstance(shift, int) and shift != 0
     name = "reconst_%d" % shift if shift > 0 else "predict_%d" % abs(shift)

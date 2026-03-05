@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Universal Transformers.
+"""通用 Transformer。
 
-Universal Transformer is described in https://arxiv.org/abs/1807.03819.
+通用 Transformer 描述于 https://arxiv.org/abs/1807.03819。
 
-Universal Transformer is recurrent in depth while employing self-attention
-to combine information from different parts of sequences.
-In contrast to the Transformer, given enough memory its recurrence in depth
-makes the Universal Transformer computationally universal.
+通用 Transformer 在深度上是循环的，同时使用自注意力机制来结合序列不同部分的信息。
+与 Transformer 不同，给定足够的内存，其在深度上的循环使通用 Transformer 具有计算通用性。
 """
 
 from __future__ import absolute_import
@@ -40,34 +38,36 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class UniversalTransformer(transformer.Transformer):
-  """Universal Transformer: Depth-wise recurrent transformer model."""
+  """通用 Transformer：深度循环 Transformer 模型。
+
+  通用 Transformer 是一种在深度维度上使用循环机制的 Transformer 变体，
+  通过自适应计算时间（ACT）机制动态调整每个位置的计算步数。
+  """
 
   def encode(self, inputs, target_space, hparams, features=None, losses=None,
              **kwargs):
-    """Encode Universal Transformer inputs.
+    """编码通用 Transformer 输入。
 
-    It is similar to "transformer.encode", but it uses
-    "universal_transformer_util.universal_transformer_encoder" instead of
-    "transformer.transformer_encoder".
+    类似于 "transformer.encode"，但使用
+    "universal_transformer_util.universal_transformer_encoder" 而不是
+    "transformer.transformer_encoder"。
 
-    Args:
-      inputs: Transformer inputs [batch_size, input_length, input_height,
-        hidden_dim] which will be flattened along the two spatial dimensions.
-      target_space: scalar, target space ID.
-      hparams: hyperparmeters for model.
-      features: optionally pass the entire features dictionary as well.
-        This is needed now for "packed" datasets.
-      losses: Unused.
-      **kwargs: additional arguments to pass to encoder_function
+    参数：
+        inputs: Transformer 输入 [batch_size, input_length, input_height,
+            hidden_dim]，将沿两个空间维度展平
+        target_space: 标量，目标空间 ID
+        hparams: 模型超参数
+        features: 可选地传递整个特征字典。这对于"packed"数据集是必需的
+        losses: 未使用
+        **kwargs: 传递给 encoder_function 的其他参数
 
-    Returns:
-      Tuple of:
-          encoder_output: Encoder representation.
-              [batch_size, input_length, hidden_dim]
-          encoder_decoder_attention_bias: Bias and mask weights for
-              encoder-decoder attention. [batch_size, input_length]
-          encoder_extra_output: which is extra encoder output used in some
-            variants of the model (e.g. in ACT, to pass the ponder-time to body)
+    返回：
+        元组：
+            encoder_output: 编码器表示。[batch_size, input_length, hidden_dim]
+            encoder_decoder_attention_bias: 编码器 - 解码器注意力的偏置和掩码权重。
+                [batch_size, input_length]
+            encoder_extra_output: 额外的编码器输出，用于模型的一些变体
+                （例如在 ACT 中，用于传递 ponder-time 到 body）
     """
     del losses
 

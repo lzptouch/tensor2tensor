@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Mesh-Tensorflow Model in tensor2tensor."""
+"""Mesh-TensorFlow 模型在 tensor2tensor 中。
+
+实现基于 Mesh-TensorFlow 的模型，用于分布式训练和大规模模型。
+"""
 
 
 from __future__ import absolute_import
@@ -35,7 +38,10 @@ from tensorflow.contrib.tpu.python.tpu import tpu_estimator
 
 
 class MtfModel(t2t_model.T2TModel):
-  """Toy model to test mesh_tensorflow."""
+  """用于测试 Mesh-TensorFlow 的玩具模型。
+
+  提供 Mesh-TensorFlow 在 tensor2tensor 中的集成示例。
+  """
 
   @classmethod
   def estimator_model_fn(cls,
@@ -47,6 +53,21 @@ class MtfModel(t2t_model.T2TModel):
                          params=None,
                          decode_hparams=None,
                          use_tpu=False):
+    """创建模型函数。
+
+    参数：
+        hparams: 超参数对象
+        features: 输入特征
+        labels: 标签
+        mode: 模式（TRAIN/EVAL/PREDICT）
+        config: 运行配置
+        params: 其他参数
+        decode_hparams: 解码超参数
+        use_tpu: 是否使用 TPU
+
+    返回：
+        模型函数
+    """
     hparams = hparams_lib.copy_hparams(hparams)
     hparams.use_tpu = use_tpu
     # merge decode_hparams into hparams if present

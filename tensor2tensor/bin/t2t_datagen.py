@@ -13,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Produces the training and dev data for --problem into --data_dir.
+"""为 --problem 生成训练和开发数据到 --data_dir。
 
-Produces sharded and shuffled TFRecord files of tensorflow.Example protocol
-buffers for a variety of registered datasets.
+生成用于各种注册数据集的 tensorflow.Example 协议缓冲区的分片和打乱的 TFRecord 文件。
 
-All Problems are registered with @registry.register_problem or are in
-_SUPPORTED_PROBLEM_GENERATORS in this file. Each entry maps a string name
-(selectable on the command-line with --problem) to a function that takes 2
-arguments - input_directory and mode (one of "train" or "dev") - and yields for
-each training example a dictionary mapping string feature names to lists of
-{string, int, float}. The generator will be run once for each mode.
+所有问题都通过 @registry.register_problem 注册，或在本文件的 _SUPPORTED_PROBLEM_GENERATORS 中。
+每个条目将一个字符串名称（可通过 --problem 在命令行选择）映射到一个函数，
+该函数接受 2 个参数 - input_directory 和 mode（"train"或"dev"之一）- 并为每个训练示例生成
+一个字典，将字符串特征名映射到 {string, int, float} 列表。生成器将为每种模式运行一次。
+
+功能说明：
+- 数据生成工具，用于创建训练和评估数据集
+- 支持多种数据格式：文本、图像、音频等
+- 生成 TFRecord 格式的文件，便于 TensorFlow 模型使用
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -152,22 +154,46 @@ _SUPPORTED_PROBLEM_GENERATORS = {
 
 
 def set_random_seed():
-  """Set the random seed from flag everywhere."""
+  """设置随机种子以确保结果可复现。
+  
+  功能说明：
+  - 在 TensorFlow、Python random 和 NumPy 中设置相同的随机种子
+  - 确保数据生成过程的确定性
+  """
+  # 设置 TensorFlow 的随机种子
   tf.set_random_seed(FLAGS.random_seed)
+  # 设置 Python 内置 random 模块的种子
   random.seed(FLAGS.random_seed)
+  # 设置 NumPy 的随机种子
   np.random.seed(FLAGS.random_seed)
 
 
 def main(_):
+  """主函数：执行数据生成流程。
+  
+  Args:
+    _: 未使用的参数占位符
+  
+  流程说明：
+  1. 导入用户自定义模块（如果有）
+  2. 计算要生成的问题列表
+  3. 过滤和筛选问题
+  4. 为每个问题生成数据
+  """
+  # 导入用户自定义目录中的模块（支持自定义问题注册）
   usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
 
-  # Calculate the list of problems to generate.
+  # 计算要生成的问题列表
   problems = sorted(
       list(_SUPPORTED_PROBLEM_GENERATORS) + registry.list_base_problems() +
       registry.list_env_problems())
+  
+  # 排除指定的问题（如果设置了 exclude_problems）
   for exclude in FLAGS.exclude_problems.split(","):
     if exclude:
       problems = [p for p in problems if exclude not in p]
+  
+  # 根据通配符过滤问题名称
   if FLAGS.problem and FLAGS.problem[-1] == "*":
     problems = [p for p in problems if p.startswith(FLAGS.problem[:-1])]
   elif FLAGS.problem and "," in FLAGS.problem:

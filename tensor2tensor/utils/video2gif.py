@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""View the problem.
+"""查看问题（数据集）的工具。
 
-This binary saves the videos in the problem(dataset) into gifs.
+该二进制文件将问题（数据集）中的视频保存为 gif 格式。
 
-The imagemagick package should be installed for conversion to gifs.
+需要安装 imagemagick 包以转换为 gif。
 
-Example usage to view dataset:
+查看数据集的示例用法：
 
-  video2gif \
-      --data_dir ~/data \
-      --problem=gym_water_world_random5k \
-      --hparams_set=next_frame_stochastic \
-      --output_dir /usr/local/google/home/mbz/t2t_train/ww/ \
-      --data_dir /usr/local/google/home/mbz/temp/ \
+  video2gif \\
+      --data_dir ~/data \\
+      --problem=gym_water_world_random5k \\
+      --hparams_set=next_frame_stochastic \\
+      --output_dir /usr/local/google/home/mbz/t2t_train/ww/ \\
+      --data_dir /usr/local/google/home/mbz/temp/ \\
       --num_samples 10
 """
 from __future__ import absolute_import

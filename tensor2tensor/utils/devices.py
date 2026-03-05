@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Device placement and data parallelism."""
+"""设备放置和数据并行。
+
+包含用于设备管理和数据并行训练的函数和类。
+
+功能说明：
+- 提供设备放置策略（GPU/TPU/CPU）
+- 实现数据并行训练
+- 支持同步和异步训练模式
+- 提供专家混合（MoE）设备管理
+- 优化多设备间的内存分配
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hyperparameters and ranges common to multiple models."""
+"""多种模型通用的超参数和范围。
+
+包含在多个深度学习模型中常用的超参数定义。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -27,7 +30,11 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_hparams("basic_1")
 def basic_params1():
-  """A set of basic hyperparameters."""
+  """一组基础超参数。
+
+  返回：
+      HParams 对象，包含基础训练的超参数配置
+  """
   return hparam.HParams(
       # If the problem consists of variable-length sequences
       # (see problem.batch_size_means_tokens()), then this is the number

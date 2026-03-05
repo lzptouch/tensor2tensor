@@ -13,20 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scheduled Sampling.
+"""计划采样（Scheduled Sampling）。
 
-This module implemented scheduled sampling as described in (Bengio et al, 2015).
-The entry points are two functions,
+本模块实现了（Bengio 等人，2015）中描述的计划采样方法。
+入口函数有两个：
 
 `sequential_scheduled_sampling_for_t2tmodel()`:
-  scheduled sampling adapted to instances of T2TModel.
+  针对 T2TModel 实例的计划采样方法
 
 `sequential_scheduled_sampling()`:
-  raw implementation of scheduled sampling. May be used independent of T2T.
+  计划采样的原始实现，可独立于 T2T 使用
 
-**WARNING** This code is VERY slow. Its runtime is at least O(n^2) for
-sequences of length n. For models with self-attention, its runtime is O(n^3).
+**警告** 此代码非常慢。对于长度为 n 的序列，其运行时至少为 O(n^2)。
+对于具有自注意力的模型，其运行时为 O(n^3)。
 
+功能说明：
+- 实现 Bengio 等人的计划采样算法
+- 用于序列到序列模型的训练
+- 逐步从教师强制过渡到自由运行
+- 提高模型的泛化能力
+- 支持多种采样策略
 """
 
 from __future__ import absolute_import
@@ -43,15 +49,15 @@ from tensorflow.python.ops import inplace_ops  # pylint: disable=g-direct-tensor
 
 
 def sequential_scheduled_sampling_for_t2tmodel(t2tmodel, features):
-  """Schedule Sampling for T2TModels.
+  """针对 T2TModel 的计划采样。
 
-  Args:
-    t2tmodel: T2TModel instance.
-    features: {str: Tensor}. Input features.
+  参数：
+      t2tmodel: T2TModel 实例
+      features: {str: Tensor}，输入特征
 
-  Returns:
-    ss_logits: [batch_size, seq_len, 1, 1, vocab_size].
-    losses_dict: {str: scalar Tensor}. Losses to minimize.
+  返回：
+      ss_logits: [batch_size, seq_len, 1, 1, vocab_size]
+      losses_dict: {str: scalar Tensor}，需要最小化的损失
   """
   targets = features["targets"]
   targets_size = common_layers.shape_list(targets)
@@ -75,19 +81,19 @@ def sequential_scheduled_sampling_for_t2tmodel(t2tmodel, features):
 
 
 def sequential_scheduled_sampling(infer_fn, mix_fn, loss_fn, targets):
-  """Scheduled Sampling.
+  """计划采样（Scheduled Sampling）。
 
-  Args:
-    infer_fn: Function. Computes logits for all timesteps.
-    mix_fn: Function. Mixes gold and sample tokens.
-    loss_fn: Function. Computes loss between gold tokens and logits.
-    targets: Tensor of shape [batch_size, seq_len]. Gold tokens.
+  参数：
+      infer_fn: 函数，计算所有时间步的 logits
+      mix_fn: 函数，混合真实标记和采样标记
+      loss_fn: 函数，计算真实标记和 logits 之间的损失
+      targets: 形状为 [batch_size, seq_len] 的张量，真实标记
 
-  Returns:
-    ss_tokens: Tensor of shape [batch_size, seq_len]. Scheduled sampling tokens.
-    ss_logits: Tensor of shape [batch_size, seq_len, vocab_size]. Logits for
-      next token when conditioning on ss_tokens.
-    losses_dict: {str: scalar Tensor}. Losses to optimize.
+  返回：
+      ss_tokens: 形状为 [batch_size, seq_len] 的张量，计划采样标记
+      ss_logits: 形状为 [batch_size, seq_len, vocab_size] 的张量，
+                 基于 ss_tokens 条件预测下一个标记的 logits
+      losses_dict: {str: scalar Tensor}，需要优化的损失
   """
   targets_shape = common_layers.shape_list(targets)
   batch_size = targets_shape[0]

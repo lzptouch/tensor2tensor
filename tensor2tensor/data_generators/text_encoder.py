@@ -13,12 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Encoders for text data.
+"""文本数据编码器。
 
-* TextEncoder: base class
-* ByteTextEncoder: for ascii text
-* TokenTextEncoder: with user-supplied vocabulary file
-* SubwordTextEncoder: invertible
+包含用于文本数据编码和解码的各种编码器类：
+* TextEncoder: 基类，定义编码/解码接口
+* ByteTextEncoder: 用于 ASCII 文本的字节级别编码
+* TokenTextEncoder: 使用用户提供的词汇表文件进行标记编码
+* SubwordTextEncoder: 子词级别的可逆编码器
+
+功能说明：
+- 将文本转换为模型可处理的整数序列
+- 支持多种编码策略：字符级、标记级、子词级
+- 提供词汇表构建和管理功能
+- 支持编码和解码的双向转换
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -37,12 +44,21 @@ from tensor2tensor.data_generators import tokenizer
 
 import tensorflow.compat.v1 as tf
 
-# Reserved tokens for things like padding and EOS symbols.
+# 导入 TensorFlow 和兼容层
+import tensorflow.compat.v1 as tf
+
+# ========== 保留标记定义 ==========
+# 填充标记（用于序列对齐）
 PAD = "<pad>"
+# 句子结束标记（End Of Sentence）
 EOS = "<EOS>"
+# 所有保留标记列表
 RESERVED_TOKENS = [PAD, EOS]
+# 保留标记的数量（通常为 2）
 NUM_RESERVED_TOKENS = len(RESERVED_TOKENS)
+# 填充标记的 ID（通常是 0）
 PAD_ID = RESERVED_TOKENS.index(PAD)  # Normally 0
+# 句子结束标记的 ID（通常是 1）
 EOS_ID = RESERVED_TOKENS.index(EOS)  # Normally 1
 
 if six.PY2:

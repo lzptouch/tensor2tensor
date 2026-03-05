@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utils for metrics used in eval."""
+"""评估中使用的指标工具函数。
+
+包含用于评估模型性能的各种指标计算函数。
+
+功能说明：
+- 提供多种评估指标计算（准确率、BLEU、ROUGE 等）
+- 支持序列到序列任务的评估
+- 支持图像分类任务的评估
+- 提供困惑度（perplexity）计算
+- 支持自定义指标注册和扩展
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -33,41 +43,49 @@ from tensorflow.python.util import tf_inspect as inspect
 
 
 class Metrics(object):
-  """Available evaluation metrics."""
-  # Entries here should match the keys in METRICS_FNS below
-  ACC = "accuracy"
-  ACC_TOP5 = "accuracy_top5"
-  ACC_PER_SEQ = "accuracy_per_sequence"
-  ACC_MULTILABEL_MATCH3 = "accuracy_multilabel_match3"
-  NEG_LOG_PERPLEXITY = "neg_log_perplexity"
-  MASKED_NEG_LOG_PERPLEXITY = "masked_neg_log_perplexity"
-  APPROX_BLEU = "approx_bleu_score"
-  APPROX_SARI = "approx_sari_score"
-  RMSE = "rmse"
-  UNPADDED_MSE = "unpadded_mse"
-  LOG_POISSON = "log_poisson"
-  PEARSON = "pearson"
-  R2 = "r_squared"
-  ROUGE_2_F = "rouge_2_fscore"
-  ROUGE_L_F = "rouge_L_fscore"
-  EDIT_DISTANCE = "edit_distance"
-  PREFIX_ACCURACY = "prefix_accuracy"
-  WORD_ERROR_RATE = "word_error_rate"
-  SET_PRECISION = "set_precision"
-  SET_RECALL = "set_recall"
-  SOFTMAX_CROSS_ENTROPY_ONE_HOT = "softmax_cross_entropy_one_hot"
-  SIGMOID_ACCURACY_ONE_HOT = "sigmoid_accuracy_one_hot"
-  SIGMOID_ACCURACY = "sigmoid_accuracy"
-  SIGMOID_RECALL_ONE_HOT = "sigmoid_recall_one_hot"
-  SIGMOID_PRECISION_ONE_HOT = "sigmoid_precision_one_hot"
-  SIGMOID_CROSS_ENTROPY_ONE_HOT = "sigmoid_cross_entropy_one_hot"
-  TWO_CLASS_ACCURACY = "two_class_accuracy"
-  TWO_CLASS_LOG_LIKELIHOOD = "two_class_log_likelihood"
-  ROC_AUC = "roc_auc"
-  IMAGE_SUMMARY = "image_summary"
-  DMOL_PERPLEXITY = "disc_mol_neg_log_perplexity"
-  ABS_ERR = "mean_absolute_error"
-  IMAGE_RMSE = "image_rmse"
+  """可用的评估指标枚举。
+  
+  定义各种评估指标的名称，用于评估模型性能。
+  
+  功能说明：
+  - 提供标准化的指标名称常量
+  - 支持分类、翻译、生成等多种任务的评估
+  - 与 METRICS_FNS 字典配合使用
+  """
+  # 以下条目应与 METRICS_FNS 中的键匹配
+  ACC = "accuracy"  # 准确率：正确预测的比例
+  ACC_TOP5 = "accuracy_top5"  # Top-5 准确率：前 5 个预测中包含正确答案的比例
+  ACC_PER_SEQ = "accuracy_per_sequence"  # 每序列准确率：按序列计算的准确率
+  ACC_MULTILABEL_MATCH3 = "accuracy_multilabel_match3"  # 多标签匹配 3 准确率
+  NEG_LOG_PERPLEXITY = "neg_log_perplexity"  # 负对数困惑度：衡量语言模型质量
+  MASKED_NEG_LOG_PERPLEXITY = "masked_neg_log_perplexity"  # 掩码负对数困惑度
+  APPROX_BLEU = "approx_bleu_score"  # 近似 BLEU 分数：机器翻译质量评估
+  APPROX_SARI = "approx_sari_score"  # 近似 SARI 分数
+  RMSE = "rmse"  # 均方根误差
+  UNPADDED_MSE = "unpadded_mse"  # 无填充均方误差
+  LOG_POISSON = "log_poisson"  # 对数泊松
+  PEARSON = "pearson"  # 皮尔逊相关系数
+  R2 = "r_squared"  # R 平方
+  ROUGE_2_F = "rouge_2_fscore"  # ROUGE-2 F 分数
+  ROUGE_L_F = "rouge_L_fscore"  # ROUGE-L F 分数
+  EDIT_DISTANCE = "edit_distance"  # 编辑距离
+  PREFIX_ACCURACY = "prefix_accuracy"  # 前缀准确率
+  WORD_ERROR_RATE = "word_error_rate"  # 词错误率
+  SET_PRECISION = "set_precision"  # 集合精确率
+  SET_RECALL = "set_recall"  # 集合召回率
+  SOFTMAX_CROSS_ENTROPY_ONE_HOT = "softmax_cross_entropy_one_hot"  # Softmax 交叉熵（独热）
+  SIGMOID_ACCURACY_ONE_HOT = "sigmoid_accuracy_one_hot"  # Sigmoid 准确率（独热）
+  SIGMOID_ACCURACY = "sigmoid_accuracy"  # Sigmoid 准确率
+  SIGMOID_RECALL_ONE_HOT = "sigmoid_recall_one_hot"  # Sigmoid 召回率（独热）
+  SIGMOID_PRECISION_ONE_HOT = "sigmoid_precision_one_hot"  # Sigmoid 精确率（独热）
+  SIGMOID_CROSS_ENTROPY_ONE_HOT = "sigmoid_cross_entropy_one_hot"  # Sigmoid 交叉熵（独热）
+  TWO_CLASS_ACCURACY = "two_class_accuracy"  # 二分类准确率
+  TWO_CLASS_LOG_LIKELIHOOD = "two_class_log_likelihood"  # 二分类对数似然
+  ROC_AUC = "roc_auc"  # ROC AUC
+  IMAGE_SUMMARY = "image_summary"  # 图像摘要
+  DMOL_PERPLEXITY = "disc_mol_neg_log_perplexity"  # 离散分子负对数困惑度
+  ABS_ERR = "mean_absolute_error"  # 平均绝对误差
+  IMAGE_RMSE = "image_rmse"  # 图像 RMSE
 
 
 def image_rmse(predictions, labels, weights_fn=common_layers.weights_all):

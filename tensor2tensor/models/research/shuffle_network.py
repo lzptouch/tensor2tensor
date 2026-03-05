@@ -13,16 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Neural Shuffle-Exchange Network.
+"""神经 Shuffle-Exchange 网络。
 
-Implementation of
-"Neural Shuffle-Exchange Networks - Sequence Processing in O(n log n) Time"
-paper by K.Freivalds, E.Ozolins, A.Sostaks.
+实现"Neural Shuffle-Exchange Networks - Sequence Processing in O(n log n) Time"
+论文，作者：K.Freivalds, E.Ozolins, A.Sostaks。
 
-Paper: https://papers.nips.cc/paper/
+论文链接：https://papers.nips.cc/paper/
 8889-neural-shuffle-exchange-networks-sequence-processing-in-on-log-n-time.pdf
 
-Original code: https://github.com/LUMII-Syslab/shuffle-exchange
+原始代码：https://github.com/LUMII-Syslab/shuffle-exchange
+
+该网络是一种高效的序列处理架构，可以在 O(n log n) 时间内处理序列数据。
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -37,15 +38,15 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def ror(x, n, p=1):
-  """Bitwise right rotation.
+  """按位右旋转。
 
-  Args:
-    x: Input tensor
-    n: Bit count to represent x
-    p: Bit positions to shift
+  参数：
+      x: 输入张量
+      n: 表示 x 的位数
+      p: 要移动的位数
 
-  Returns:
-    tf.Tensor: x shifted by p positions in n bits
+  返回：
+      x 在 n 位中移动 p 个位置的张量
   """
 
   a = tf.bitwise.right_shift(x, p)
@@ -57,15 +58,15 @@ def ror(x, n, p=1):
 
 
 def rol(x, n, p=1):
-  """Bitwise left rotation.
+  """按位左旋转。
 
-  Args:
-    x: Input tensor
-    n: Bit count to represent x
-    p: Bit positions to shift
+  参数：
+      x: 输入张量
+      n: 表示 x 的位数
+      p: 要移动的位数
 
-  Returns:
-    tf.Tensor: x shifted by p positions in n bits
+  返回：
+      x 在 n 位中移动 p 个位置的张量
   """
   a = tf.bitwise.left_shift(x, p)
   b = tf.bitwise.left_shift(1, n) - 1

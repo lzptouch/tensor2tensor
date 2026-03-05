@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""PPO algorithm implementation.
+"""PPO 算法实现。
 
-Based on: https://arxiv.org/abs/1707.06347
+基于论文：https://arxiv.org/abs/1707.06347
+
+近端策略优化（Proximal Policy Optimization, PPO）是一种强化学习算法，
+通过限制策略更新的幅度来提高训练稳定性。
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -32,7 +35,21 @@ import tensorflow_probability as tfp
 
 def define_ppo_step(data_points, hparams, action_space, lr, epoch=-1,
                     distributional_size=1, distributional_subscale=0.04):
-  """Define ppo step."""
+  """定义 PPO 步骤。
+
+  参数：
+      data_points: 数据点元组，包含 (observation, action, discounted_reward,
+          discounted_reward_probs, norm_advantage, old_pdf)
+      hparams: 超参数对象
+      action_space: 动作空间对象
+      lr: 学习率
+      epoch: 当前训练轮次，默认为 -1
+      distributional_size: 分布大小，默认为 1
+      distributional_subscale: 分布子缩放因子，默认为 0.04
+
+  返回：
+      PPO 步骤的损失和相关信息
+  """
   del distributional_subscale
   (observation, action, discounted_reward, discounted_reward_probs,
    norm_advantage, old_pdf) = data_points

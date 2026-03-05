@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Parameter sets for training of model-based RL agents."""
+r"""基于模型的 RL 代理训练的参数集。
+
+定义用于训练基于模型的强化学习代理的各种超参数配置，
+包括训练轮次、环境帧数、模型参数等。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

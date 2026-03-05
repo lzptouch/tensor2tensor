@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Attention models for VQA."""
+"""VQA 的注意力模型。
+
+实现用于视觉问答（Visual Question Answering, VQA）任务的注意力模型，
+结合图像特征和问题文本来生成答案。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -39,19 +43,21 @@ from tensorflow.contrib.slim.python.slim.nets.resnet_v2 import resnet_v2_152
 
 @registry.register_model
 class VqaAttentionBaseline(t2t_model.T2TModel):
-  """Attention baseline model for VQA."""
+  """VQA 的注意力基线模型。
 
-  # @staticmethod
-  # def train_hooks():
-  #   restore_resnet_hook = restore_hook.RestoreHook(
-  #       # TODO(zichaoy): hard code the path given static function.
-  #       checkpoint_path="/home/zichaoy/resnet_v1_152.ckpt",
-  #       new_model_scope="vqa_attention_baseline/body/",
-  #       old_model_scope="resnet_v1_152/",
-  #   )
-  #   return [restore_resnet_hook]
+  使用注意力机制结合图像和问题特征，
+  用于视觉问答任务的基线模型。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典，包含图像和问题
+
+    返回：
+        模型输出
+    """
     hp = self.hparams
     model_fn = resnet_v1_152
     if hp.image_model_fn != "resnet_v1_152":

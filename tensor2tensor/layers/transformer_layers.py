@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Commonly re-used transformer layers."""
+"""常用的 Transformer 层。
+
+包含在 Transformer 模型中常用的层和函数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,25 +39,23 @@ def layers():
 def transformer_prepare_encoder(inputs, target_space, hparams, features=None,
                                 type_ids=None, num_types=None,
                                 reuse_target_embedding=tf.AUTO_REUSE):
-  """Prepare one shard of the model for the encoder.
+  """准备编码器的一个分片。
 
-  Args:
-    inputs: a Tensor.
-    target_space: a Tensor.
-    hparams: run hyperparameters
-    features: optionally pass the entire features dictionary as well.
-      This is needed now for "packed" datasets.
-    type_ids: optional, an int64 Tensor of shape [batch, length] that allows
-      for adding type embeddings, similar to positional embeddings.
-    num_types: optional, an int that decides the number of types in type_ids.
-    reuse_target_embedding: option to reuse variable name in the case that
-      symbol modalities are reused between inputs/targets.
+  参数：
+      inputs: Tensor，输入数据。
+      target_space: Tensor，目标空间。
+      hparams: 运行超参数。
+      features: 可选，传递整个特征字典。这对于"packed"数据集是必需的。
+      type_ids: 可选，形状为 [batch, length] 的 int64 Tensor，
+          允许添加类型嵌入，类似于位置嵌入。
+      num_types: 可选，int，决定 type_ids 中的类型数量。
+      reuse_target_embedding: 在符号模态在输入/目标之间重用时，
+          重用变量名的选项。
 
-  Returns:
-    encoder_input: a Tensor, bottom of encoder stack
-    encoder_self_attention_bias: a bias tensor for use in encoder self-attention
-    encoder_decoder_attention_bias: a bias tensor for use in encoder-decoder
-      attention
+  返回：
+      encoder_input: Tensor，编码器栈的底部
+      encoder_self_attention_bias: 用于编码器自注意力的偏置 Tensor
+      encoder_decoder_attention_bias: 用于编码器 - 解码器注意力的偏置 Tensor
   """
   ishape_static = inputs.shape.as_list()
   encoder_input = inputs

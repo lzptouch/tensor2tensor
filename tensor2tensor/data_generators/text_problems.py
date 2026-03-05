@@ -13,17 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base classes for text-based Problems.
+"""基于文本的问题的基类。
 
-* Text2TextProblem: input=text, target=text.
-* Text2ClassProblem: input=text, target=class.
-* Text2RealProblem: input=text, target=float.
-* Text2SelfProblem (for language modeling): target=text
-* QuestionAndContext2TextProblem: input=text, context=text, target=text.
+包含以下问题类型：
+* Text2TextProblem: 输入=文本，目标=文本（序列到序列任务）
+* Text2ClassProblem: 输入=文本，目标=类别（文本分类任务）
+* Text2RealProblem: 输入=文本，目标=浮点数（回归任务）
+* Text2SelfProblem (用于语言建模): 目标=文本（自回归语言模型）
+* QuestionAndContext2TextProblem: 输入=文本，上下文=文本，目标=文本（问答任务）
 
-The Text2TextTmpDir problem allows you to train without defining a problem. It
-expects you to format your data in a particular way and put it in tmp_dir. See
-its docstring.
+Text2TextTmpDir 问题允许在不定义问题的情况下进行训练。
+它期望您以特定方式格式化数据并将其放入 tmp_dir。参见其文档字符串。
+
+功能说明：
+- 提供文本处理任务的基类实现
+- 支持多种文本任务类型（翻译、分类、问答等）
+- 提供词汇表管理和数据生成接口
+- 支持字符级、子词级、标记级等多种编码方式
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -44,24 +50,28 @@ import tensorflow.compat.v1 as tf
 
 
 class VocabType(object):
-  """Available text vocabularies."""
-  CHARACTER = "character"
-  SUBWORD = "subwords"
-  TOKEN = "tokens"
+  """可用的文本词汇表类型枚举。
+  
+  功能说明：
+  - 定义不同的词汇表构建策略
+  - 用于选择合适的文本编码方式
+  """
+  CHARACTER = "character"  # 字符级词汇表（每个字符作为一个 token）
+  SUBWORD = "subwords"  # 子词级词汇表（使用 BPE 等算法）
+  TOKEN = "tokens"  # 标记级词汇表（按空格或标点分词）
 
 
 class Text2TextProblem(problem.Problem):
-  """Base class for text-to-text problems.
+  """文本到文本问题的基类。
 
-  Subclasses only must override `generate_samples` and `is_generate_per_split`.
-  See the "Subclass interface" code block below to see what else subclasses can
-  override.
+  子类只需重写 `generate_samples` 和 `is_generate_per_split`。
+  请参阅下面的"子类接口"代码块，了解子类还可以重写哪些内容。
   """
 
-  # START: Subclass interface
+  # START: 子类接口
   @property
   def dataset_splits(self):
-    """Splits of data to produce and number of output shards for each."""
+    """要生成的数据分割和每个分割的输出分片数量。"""
     return [{
         "split": problem.DatasetSplit.TRAIN,
         "shards": 100,
@@ -72,19 +82,18 @@ class Text2TextProblem(problem.Problem):
 
   @property
   def is_generate_per_split(self):
-    """A single call to `generate_samples` generates for all `dataset_splits`.
+    """单次调用 `generate_samples` 会为所有 `dataset_splits` 生成数据。
 
-    Set to True if you already have distinct subsets of data for each dataset
-    split specified in `self.dataset_splits`. `self.generate_samples` will be
-    called once for each split.
+    如果您已经为 `self.dataset_splits` 中指定的每个数据集分割
+    具有不同的数据子集，则设置为 True。`self.generate_samples` 将
+    为每个分割调用一次。
 
-    Set to False if you have a unified dataset that you'd like to have split out
-    into training and evaluation data automatically. `self.generate_samples`
-    will be called only once and the data will be sharded across the dataset
-    splits specified in `self.dataset_splits`.
+    如果您有一个统一的数据集，希望自动将其分割为训练和评估数据，
+    则设置为 False。`self.generate_samples` 将仅调用一次，数据将
+    在 `self.dataset_splits` 中指定的数据集分割之间进行分片。
 
-    Returns:
-      bool
+    返回：
+        布尔值
     """
     raise NotImplementedError()
 

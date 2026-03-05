@@ -13,33 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for Universal Transformer.
+"""Universal Transformer 的工具函数。
 
-The Universal Transformer is based on the popular encoder-decoder architecture.
-However, as opposed to a fixed stack of distinct layers (as is usually the case
-for most popular neural sequence models), the Universal Transformer is
-recurrent "in depth", and repeatedly applies the same series of functions with
-the same parameters to all elements of the sequence in parallel, revising their
-representations with every step. The encoder and decoder have the same
-recurrent structure, but the decoder additionally consumes the final encoder
-representations for each position. Like the Transformer, the Universal
-Transformer is autoregressive. Trained using teacher-forcing, at generation
-time it produces its output one position at a time, with the decoder consuming
-the previously produced output positions.
+Universal Transformer 基于流行的编码器-解码器架构。
+然而，与固定堆叠的不同层（大多数流行的神经序列模型通常都是这样）相反，
+Universal Transformer 是“深度循环”的，它使用相同的参数
+对序列的所有元素并行重复应用相同的函数系列，
+每一步都修改它们的表示。编码器和解码器具有相同的
+循环结构，但解码器还为每个位置消耗最终的编码器表示。
+与 Transformer 一样，Universal Transformer 是自回归的。
+使用教师强制进行训练，在生成时，它一次产生一个位置的输出，
+解码器消耗先前产生的输出位置。
 
-Given an input sequence of length m, we start with a matrix whose rows are the
-d-dimensional embeddings of the symbols at each position of the sequence.
-The Universal Transformer then iteratively computes representation of the input
-at each step by applying the multiheaded dot-product self-attention mechanism,
-followed by a recurrent transition function. We also add residual connections
-around each of these function blocks and apply dropout and layer normalization.
+给定长度为 m 的输入序列，我们从一个矩阵开始，其行是
+序列每个位置符号的 d 维嵌入。
+然后，Universal Transformer 通过应用多头点积自注意力机制，
+然后是循环转换函数，迭代地计算每一步的输入表示。
+我们还在每个这些函数块周围添加残差连接，并应用 dropout 和层归一化。
 
-The recurrent transition function in fact controls how steps communicate with
-each other in depth. For instance, the recurrent transition, can be a simple
-identity function which passes the output of a step as the input to next step.
-Or it can be an LSTM (flipped vertically) next to the transformer which
-controls how state of the model changes in depth.
-
+循环转换函数实际上控制步骤如何在深度上相互通信。
+例如，循环转换可以是一个简单的恒等函数，
+将步骤的输出作为下一步的输入传递。
+或者它可以是一个 LSTM（垂直翻转），位于 Transformer 旁边，
+控制模型状态在深度上的变化。
 """
 
 from __future__ import absolute_import
@@ -67,31 +63,27 @@ def universal_transformer_encoder(encoder_input,
                                   nonpadding=None,
                                   save_weights_to=None,
                                   make_image_summary=True):
-  """Universal Transformer encoder function.
+  """Universal Transformer 编码器函数。
 
-  Prepares all the arguments and the inputs and passes it to a
-  universal_transformer_layer to encode the encoder_input.
+  准备所有参数和输入，并将其传递给 universal_transformer_layer 来编码 encoder_input。
 
-  Args:
-    encoder_input: a Tensor
-    encoder_self_attention_bias: bias Tensor for self-attention
-       (see common_attention.attention_bias())
-    hparams: hyperparameters for model
-    name: a string
-    nonpadding: optional Tensor with shape [batch_size, encoder_length]
-      indicating what positions are not padding.  This must either be
-      passed in, which we do for "packed" datasets, or inferred from
-      encoder_self_attention_bias.  The knowledge about padding is used
-      for pad_remover(efficiency) and to mask out padding in convoltutional
-      layers.
-    save_weights_to: an optional dictionary to capture attention weights
-      for vizualization; the weights tensor will be appended there under
-      a string key created from the variable scope (including name).
-    make_image_summary: Whether to make an attention image summary.
+  参数：
+      encoder_input: 输入张量
+      encoder_self_attention_bias: 自注意力的偏置张量
+          （见 common_attention.attention_bias()）
+      hparams: 模型超参数
+      name: 字符串名称
+      nonpadding: 可选张量，形状为 [batch_size, encoder_length]
+          指示哪些位置不是填充。这必须要么被传入（对于"packed"数据集），
+          要么从 encoder_self_attention_bias 推断。
+          填充知识用于 pad_remover（效率）并在卷积层中屏蔽填充。
+      save_weights_to: 可选字典，用于捕获注意力权重以进行可视化；
+          权重张量将以从变量作用域（包括名称）创建的字符串键附加到那里。
+      make_image_summary: 是否制作注意力图像摘要。
 
-  Returns:
-    y: a Tensors as the output of the encoder
-    extra_output: which can be used to pass extra information to the body
+  返回：
+      y: 编码器输出的张量
+      extra_output: 可用于向主体传递额外信息
   """
 
   x = encoder_input
@@ -138,33 +130,30 @@ def universal_transformer_decoder(decoder_input,
                                   nonpadding=None,
                                   save_weights_to=None,
                                   make_image_summary=True):
-  """Universal Transformer decoder function.
+  """Universal Transformer 解码器函数。
 
-  Prepares all the arguments and the inputs and passes it to a
-  core_universal_transformer_layer to decoder.
+  准备所有参数和输入，并将其传递给 core_universal_transformer_layer 进行解码。
 
-  Args:
-    decoder_input: a Tensor
-    encoder_output: a Tensor
-    decoder_self_attention_bias: bias Tensor for self-attention
-      (see common_attention.attention_bias())
-    encoder_decoder_attention_bias: bias Tensor for encoder-decoder attention
-      (see common_attention.attention_bias())
-    hparams: hyperparameters for model
-    name: a string
-    nonpadding: optional Tensor with shape [batch_size, encoder_length]
-      indicating what positions are not padding.  This is used
-      to mask out padding in convoltutional layers.  We generally only
-      need this mask for "packed" datasets, because for ordinary datasets,
-      no padding is ever followed by nonpadding.
-    save_weights_to: an optional dictionary to capture attention weights
-      for vizualization; the weights tensor will be appended there under
-      a string key created from the variable scope (including name).
-    make_image_summary: Whether to make an attention image summary.
+  参数：
+      decoder_input: 输入张量
+      encoder_output: 编码器输出张量
+      decoder_self_attention_bias: 自注意力的偏置张量
+          （见 common_attention.attention_bias()）
+      encoder_decoder_attention_bias: 编码器-解码器注意力的偏置张量
+          （见 common_attention.attention_bias()）
+      hparams: 模型超参数
+      name: 字符串名称
+      nonpadding: 可选张量，形状为 [batch_size, encoder_length]
+          指示哪些位置不是填充。这用于在卷积层中屏蔽填充。
+          我们通常只需要这个掩码用于"packed"数据集，
+          因为对于普通数据集，填充后面永远不会有非填充。
+      save_weights_to: 可选字典，用于捕获注意力权重以进行可视化；
+          权重张量将以从变量作用域（包括名称）创建的字符串键附加到那里。
+      make_image_summary: 是否制作注意力图像摘要。
 
-  Returns:
-    y: the output Tensors
-    extra_output: which can be used to pass extra information to the body
+  返回：
+      y: 输出张量
+      extra_output: 可用于向主体传递额外信息
   """
   x = decoder_input
   attention_dropout_broadcast_dims = (
@@ -197,32 +186,32 @@ def universal_transformer_layer(x,
                                 ffn_unit,
                                 attention_unit,
                                 pad_remover=None):
-  """Core function applying the universal transformer layer.
+  """应用 universal transformer 层的核心函数。
 
-  Args:
-    x: input
-    hparams: model hyper-parameters
-    ffn_unit: feed-forward unit
-    attention_unit: multi-head attention unit
-    pad_remover: to mask out padding in convolutional layers (efficiency).
+  参数：
+      x: 输入张量
+      hparams: 模型超参数
+      ffn_unit: 前馈单元
+      attention_unit: 多头注意力单元
+      pad_remover: 用于在卷积层中屏蔽填充（效率）。
 
-  Returns:
-    the output tensor,  extra output (can be memory, ponder time, etc.)
+  返回：
+      输出张量，额外输出（可以是内存、思考时间等）
 
-  Raises:
-    ValueError: Unknown recurrence type
+  异常：
+      ValueError: 如果使用了无效的循环类型
   """
 
   def add_vanilla_transformer_layer(x, num_layers, name):
-    """Passes the input through num_layers of vanilla transformer layers.
+    """将输入通过 num_layers 个 vanilla transformer 层。
 
-    Args:
-     x: input
-     num_layers: number of layers
-     name: string, prefix of layer names
+    参数：
+        x: 输入张量
+        num_layers: 层数
+        name: 层名称
 
-    Returns:
-       output of vanilla_transformer_layer
+    返回：
+        输出张量
     """
     if hparams.add_position_timing_signal:
       # In case of add_position_timing_signal=true, we set  hparams.pos=None
@@ -271,20 +260,20 @@ def get_ut_layer(x,
                  ffn_unit,
                  attention_unit,
                  pad_remover=None):
-  """Provides the function that is used in universal transforemr steps.
+  """提供 universal transformer 步骤中使用的函数。
 
-  Args:
-    x: input
-    hparams: model hyper-parameters
-    ffn_unit: feed-forward unit
-    attention_unit: multi-head attention unit
-    pad_remover: to mask out padding in convolutional layers (efficiency).
+  参数：
+      x: 输入张量
+      hparams: 模型超参数
+      ffn_unit: 前馈单元
+      attention_unit: 多头注意力单元
+      pad_remover: 用于在卷积层中屏蔽填充（效率）。
 
-  Returns:
-    ut_function and the ut_initializer
+  返回：
+      ut_function 和 ut_initializer
 
-  Raises:
-    ValueError: Unknown recurrence type
+  异常：
+      ValueError: 无效的循环类型
   """
 
   if hparams.recurrence_type == "basic":

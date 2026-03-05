@@ -27,7 +27,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Convenience function for logging compliance tags to stdout.
+"""用于将合规性标签记录到 stdout 的便捷函数。
+
+MLPerf 基准测试的日志记录工具。
+
+功能说明：
+- 提供 MLPerf 基准测试的日志记录功能
+- 支持性能指标跟踪和报告
+- 符合 MLPerf 基准测试规范
+- 提供标准化的日志格式
+- 支持分布式训练的日志聚合
 """
 
 from __future__ import absolute_import

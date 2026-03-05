@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""MNIST."""
+"""MNIST 手写数字数据集。
+
+包含用于处理 MNIST 手写数字识别数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -40,7 +43,11 @@ _MNIST_IMAGE_SIZE = 28
 
 
 def _get_mnist(directory):
-  """Download all MNIST files to directory unless they are there."""
+  """下载所有 MNIST 文件到指定目录（如果不存在）。
+
+  参数：
+      directory: 目标目录
+  """
   for filename in [
       _MNIST_TRAIN_DATA_FILENAME, _MNIST_TRAIN_LABELS_FILENAME,
       _MNIST_TEST_DATA_FILENAME, _MNIST_TEST_LABELS_FILENAME
@@ -49,14 +56,14 @@ def _get_mnist(directory):
 
 
 def _extract_mnist_images(filename, num_images):
-  """Extract images from an MNIST file into a numpy array.
+  """从 MNIST 文件中提取图像到 numpy 数组。
 
-  Args:
-    filename: The path to an MNIST images file.
-    num_images: The number of images in the file.
+  参数：
+      filename: MNIST 图像文件的路径
+      num_images: 文件中的图像数量
 
-  Returns:
-    A numpy array of shape [number_of_images, height, width, channels].
+  返回：
+      形状为 [number_of_images, height, width, channels] 的 numpy 数组
   """
   with gzip.open(filename) as bytestream:
     bytestream.read(16)
@@ -67,14 +74,14 @@ def _extract_mnist_images(filename, num_images):
 
 
 def _extract_mnist_labels(filename, num_labels):
-  """Extract labels from an MNIST file into integers.
+  """从 MNIST 文件中提取标签为整数。
 
-  Args:
-    filename: The path to an MNIST labels file.
-    num_labels: The number of labels in the file.
+  参数：
+      filename: MNIST 标签文件的路径
+      num_labels: 文件中的标签数量
 
-  Returns:
-    A int64 numpy array of shape [num_labels]
+  返回：
+      形状为 [num_labels] 的 int64 numpy 数组
   """
   with gzip.open(filename) as bytestream:
     bytestream.read(8)

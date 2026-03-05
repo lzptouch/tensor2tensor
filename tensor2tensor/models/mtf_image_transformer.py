@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Image Transformer model with model and data parallelism using MTF.
+"""使用 MTF 进行模型和数据并行的图像 Transformer 模型。
 
-Integration of Mesh tensorflow with Image Transformer to do model parallelism.
-Currently, this supports unconditional image generation. Specify a particular
-architecture layout in the hparams that specifies how different dimensions are
-split or replicated along the mesh dimensions.
+Mesh-TensorFlow 与图像 Transformer 的集成，实现模型并行。
+目前支持无条件图像生成。在 hparams 中指定特定的架构布局，
+说明不同维度如何沿网格维度分割或复制。
 """
 
 from __future__ import absolute_import
@@ -38,15 +37,29 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class MtfImageTransformer(mtf_model.MtfModel):
-  """Image Transformer in mesh_tensorflow."""
+  """Mesh-TensorFlow 中的图像 Transformer。
+
+  使用 Mesh-TensorFlow 实现的图像 Transformer 模型，支持在多个设备上进行
+  模型并行和数据并行训练，专门用于图像生成任务。
+  """
 
   @property
   def inputs_vocab_dim(self):
+    """输入词汇维度。
+
+    返回：
+        输入词汇维度对象
+    """
     assert self.has_input
     return mtf.Dimension("inputs_vocab", self._hparams.num_classes)
 
   @property
   def targets_vocab_dim(self):
+    """目标词汇维度。
+
+    返回：
+        目标词汇维度对象
+    """
     vocab_size = self._problem_hparams.vocab_size["targets"]
     if hasattr(self._hparams, "vocab_divisor"):
       vocab_size += (-vocab_size) % self._hparams.vocab_divisor
@@ -54,31 +67,66 @@ class MtfImageTransformer(mtf_model.MtfModel):
 
   @property
   def outputs_vocab_dim(self):
+    """输出词汇维度。
+
+    返回：
+        输出词汇维度对象
+    """
     return mtf.Dimension("output_vocab", 256)
 
   @property
   def pos_dim(self):
+    """位置维度。
+
+    返回：
+        位置维度对象
+    """
     return mtf.Dimension("pos", self._hparams.img_len)
 
   @property
   def rows_dim(self):
+    """行维度。
+
+    返回：
+        行维度对象
+    """
     return mtf.Dimension("rows", self._hparams.img_len)
 
   @property
   def cols_dim(self):
+    """列维度。
+
+    返回：
+        列维度对象
+    """
     return mtf.Dimension(
         "cols", self._hparams.img_len*self._hparams.num_channels)
 
   @property
   def orig_cols_dim(self):
+    """原始列维度。
+
+    返回：
+        原始列维度对象
+    """
     return mtf.Dimension("orig_cols", self._hparams.img_len)
 
   @property
   def channels_dim(self):
+    """通道维度。
+
+    返回：
+        通道维度对象
+    """
     return mtf.Dimension("channels", self._hparams.num_channels)
 
   @property
   def model_dim(self):
+    """模型维度。
+
+    返回：
+        模型维度对象
+    """
     return mtf.Dimension("d_model", self._hparams.hidden_size)
 
   @property

@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Encoders for DNA data.
+"""DNA 数据的编码器。
 
-* DNAEncoder: ACTG strings to ints and back
-* DelimitedDNAEncoder: for delimited subsequences
+* DNAEncoder: ACTG 字符串与整数之间的转换
+* DelimitedDNAEncoder: 用于分隔的子序列
 """
 
 from __future__ import absolute_import
@@ -30,12 +30,12 @@ from tensor2tensor.data_generators import text_encoder
 
 
 class DNAEncoder(text_encoder.TextEncoder):
-  """ACTG strings to ints and back. Optionally chunks bases into single ids.
+  """ACTG 字符串与整数之间的转换。可选择将碱基分块为单个 id。
 
-  To use a different character set, subclass and set BASES to the char set. UNK
-  and PAD must not appear in the char set, but can also be reset.
+  要使用不同的字符集，可以子类化并设置 BASES 为字符集。
+  UNK 和 PAD 不得出现在字符集中，但也可以重置。
 
-  Uses 'N' as an unknown base.
+  使用 'N' 作为未知碱基。
   """
   BASES = list("ACTG")
   UNK = "N"
@@ -44,8 +44,14 @@ class DNAEncoder(text_encoder.TextEncoder):
   def __init__(self,
                chunk_size=1,
                num_reserved_ids=text_encoder.NUM_RESERVED_TOKENS):
+    """初始化 DNA 编码器。
+
+    参数：
+        chunk_size: 分块大小（默认 1）
+        num_reserved_ids: 保留 id 数量
+    """
     super(DNAEncoder, self).__init__(num_reserved_ids=num_reserved_ids)
-    # Build a vocabulary of chunks of size chunk_size
+    # 构建大小为 chunk_size 的分块词汇表
     self._chunk_size = chunk_size
     tokens = self._tokens()
     tokens.sort()

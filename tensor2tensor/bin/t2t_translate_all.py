@@ -13,16 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Translate a file with all checkpoints in a given directory.
+"""使用给定目录中的所有检查点翻译文件。
 
-t2t-decoder will be executed with these parameters:
+将使用这些参数执行 t2t-decoder：
 --problem
 --data_dir
---output_dir with the value of --model_dir
---decode_from_file with the value of --source
---decode_hparams with properly formatted --beam_size and --alpha
---checkpoint_path automatically filled
---decode_to_file automatically filled
+--output_dir 使用 --model_dir 的值
+--decode_from_file 使用 --source 的值
+--decode_hparams 使用正确格式的 --beam_size 和 --alpha
+--checkpoint_path 自动填充
+--decode_to_file 自动填充
+
+功能说明：
+- 批量使用多个检查点进行翻译
+- 支持等待新检查点的持续翻译模式
+- 自动生成翻译结果文件
+- 集成 BLEU 评估功能
+- 支持自定义解码器命令包装
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -37,20 +44,25 @@ import tensorflow.compat.v1 as tf
 flags = tf.flags
 FLAGS = flags.FLAGS
 
-# t2t-translate-all specific options
+# ========== t2t-translate-all 特定的配置选项 ==========
+# 解码器命令模板（支持自定义包装器）
 flags.DEFINE_string("decoder_command", "t2t-decoder {params}",
-                    "Which command to execute instead t2t-decoder. "
-                    "{params} is replaced by the parameters. Useful e.g. for "
-                    "qsub wrapper.")
+                    "要执行的命令，替代 t2t-decoder。"
+                    "{params} 将被参数替换。例如用于 qsub 包装器。")
+# 模型检查点目录
 flags.DEFINE_string("model_dir", "",
-                    "Directory to load model checkpoints from.")
+                    "加载模型检查点的目录。")
+# 源语言文件路径
 flags.DEFINE_string("source", None,
-                    "Path to the source-language file to be translated")
+                    "要翻译的源语言文件路径")
+# 翻译结果存储目录
 flags.DEFINE_string("translations_dir", "translations",
-                    "Where to store the translated files.")
-flags.DEFINE_integer("min_steps", 0, "Ignore checkpoints with less steps.")
+                    "存储翻译结果的目录。")
+# 最小步数过滤
+flags.DEFINE_integer("min_steps", 0, "忽略步数少于该值的检查点")
+# 等待新检查点的时间（分钟）
 flags.DEFINE_integer("wait_minutes", 0,
-                     "Wait upto N minutes for a new checkpoint")
+                     "等待新检查点的最长时间（分钟）")
 
 # options derived from t2t-decoder
 flags.DEFINE_integer("beam_size", 4, "Beam-search width.")

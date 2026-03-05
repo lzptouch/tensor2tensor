@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer model."""
+"""Transformer 模型。
+
+基于 Mesh-TensorFlow 实现的 Transformer 模型变体，支持单栈 Transformer 架构。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,14 +37,20 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class MtfUnitransformer(mtf_model.MtfModel):
-  """Single-stack Transformer (Transformer Decoder) in mesh_tensorflow.
+  """Mesh-TensorFlow 中的单栈 Transformer（Transformer 解码器）。
 
-  Can optionally be autoregressive (language generation) or non-autoregressive
-  like BERT.
+  可以选择是自回归的（语言生成）或非自回归的（如 BERT）。
+
+  单栈 Transformer 仅使用解码器架构，适用于语言建模和生成任务。
   """
 
   @property
   def batch_dims(self):
+    """获取批量维度。
+
+    返回：
+        批量维度列表
+    """
     hparams = self._hparams
     if hparams.outer_batch_size == 0:
       return [mtf.Dimension("batch", hparams.batch_size)]

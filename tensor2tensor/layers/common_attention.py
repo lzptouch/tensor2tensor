@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for attention."""
+"""注意力机制的工具函数。
+
+包含实现各种注意力机制的函数和类。
+
+功能说明：
+- 实现自注意力（Self-Attention）机制
+- 实现多头注意力（Multi-Head Attention）
+- 实现编码器 - 解码器注意力（Encoder-Decoder Attention）
+- 提供注意力偏置和掩码功能
+- 支持多种注意力变体（如 Area Attention 等）
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -49,16 +59,16 @@ def layers():
 
 
 def large_compatible_negative(tensor_type):
-  """Large negative number as Tensor.
+  """以 Tensor 形式返回大的负数。
 
-  This function is necessary because the standard value for epsilon
-  in this module (-1e9) cannot be represented using tf.float16
+  此函数是必要的，因为此模块中的标准 epsilon 值 (-1e9)
+  无法使用 tf.float16 表示。
 
-  Args:
-    tensor_type: a dtype to determine the type.
+  参数：
+      tensor_type: 用于确定类型的 dtype。
 
-  Returns:
-    a large negative number.
+  返回：
+      大的负数。
   """
   if tensor_type == tf.float16:
     return tf.float16.min

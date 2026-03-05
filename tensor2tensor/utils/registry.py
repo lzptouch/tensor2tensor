@@ -13,54 +13,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Object registration.
+"""对象注册表。
 
-Registries are instances of `Registry`.
+Registry 是 `Registry` 类的实例，用于集中管理 Tensor2Tensor 中的各种组件。
 
-See `Registries` for a centralized list of object registries
-(models, problems, hyperparameter sets, etc.).
+参见 `Registries` 获取对象注册表的集中列表
+（模型、问题、超参数集等）。
 
-New functions and classes can be registered using `.register`. The can be
-accessed/queried similar to dictionaries, keyed by default by `snake_case`
-equivalents.
+新函数和类可以使用 `.register` 进行注册。它们可以
+被访问/查询，类似于字典，默认使用 `snake_case` 等效名称作为键。
 
-```
+```python
 @Registries.models.register
 class MyModel(T2TModel):
   ...
 
 'my_model' in Registries.models  # True
 for k in Registries.models:
-  print(k)  # prints 'my_model'
+  print(k)  # 打印 'my_model'
 model = Registries.models['my_model'](constructor_arg)
 ```
 
-#### Legacy Support
+#### 传统支持
 
-Define a new model by subclassing T2TModel and register it:
+通过子类化 T2TModel 定义新模型并注册它：
 
-```
+```python
 @register_model
 class MyModel(T2TModel):
   ...
 ```
 
-Access by snake-cased name: `model("my_model")`. If you're using
-`t2t_trainer.py`, you can pass on the command-line: `--model=my_model`.
+通过 snake_case 名称访问：`model("my_model")`。如果您使用
+`t2t_trainer.py`，您可以在命令行传递：`--model=my_model`。
 
-See all the models registered: `list_models()`.
+查看所有注册的模型：`list_models()`。
 
-For hyperparameter sets:
-  * Register: `register_hparams`
-  * List: `list_hparams`
-  * Retrieve by name: `hparams`
-  * Command-line flag in `t2t_trainer.py`: `--hparams_set=name`
+功能说明：
+- 提供统一的组件注册机制
+- 支持模型、问题、超参数集、攻击方法等多种组件的注册
+- 通过装饰器实现自动注册
+- 支持组件查询和遍历
 
-For hyperparameter ranges:
-  * Register: `register_ranged_hparams`
-  * List: `list_ranged_hparams`
-  * Retrieve by name: `ranged_hparams`
-  * Command-line flag in `t2t_trainer.py`: `--hparams_range=name`
+对于超参数集：
+  * 注册：`register_hparams`
+  * 列出：`list_hparams`
+  * 按名称检索：`hparams`
+  * `t2t_trainer.py` 中的命令行标志：`--hparams_set=name`
+
+对于超参数范围：
+  * 注册：`register_ranged_hparams`
+  * 列出：`list_ranged_hparams`
+  * 按名称检索：`ranged_hparams`
+  * `t2t_trainer.py` 中的命令行标志：`--hparams_range=name`
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -75,16 +80,15 @@ from tensorflow.python.util import tf_inspect as inspect  # pylint: disable=g-di
 
 
 def default_name(class_or_fn):
-  """Default name for a class or function.
+  """类或函数的默认名称。
 
-  This is the naming function by default for registries expecting classes or
-  functions.
+  这是注册表期望类或函数时的默认命名函数。
 
-  Args:
-    class_or_fn: class or function to be named.
+  参数：
+      class_or_fn: 要命名的类或函数。
 
-  Returns:
-    Default name for registration.
+  返回：
+      注册的默认名称。
   """
   return misc_utils.camelcase_to_snakecase(class_or_fn.__name__)
 

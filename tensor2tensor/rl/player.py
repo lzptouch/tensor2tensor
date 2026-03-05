@@ -13,25 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Play with a world model.
+r"""与世界模型一起游戏。
 
-Controls:
-  WSAD and SPACE to control the agent.
-  R key to reset env.
-  C key to toggle WAIT mode.
-  N to perform NOOP action under WAIT mode.
-  X to reset simulated env only, when running sim-real comparison.
+用于交互式地体验训练好的世界模型和策略。
 
-Run this script with the same parameters as trainer_model_based.py. Note that
-values of most of them have no effect on player, so running just
+控制说明：
+  WSAD 和 SPACE 控制代理。
+  R 键重置环境。
+  C 键切换等待模式。
+  N 键在等待模式下执行 NOOP 操作。
+  X 键仅重置模拟环境（在进行模拟 - 真实比较时）。
+
+使用与 trainer_model_based.py 相同的参数运行此脚本。注意大多数参数的值
+对播放器没有影响，因此仅运行以下命令可能就足够了：
 
 python -m tensor2tensor/rl/player.py \
     --output_dir=path/to/your/experiment \
     --loop_hparams_set=rlmb_base
 
-might work for you.
-
-More advanced example:
+更高级的示例：
 
 python -m tensor2tensor/rl/record_ppo.py \
     --output_dir=path/to/your/experiment \
@@ -45,7 +45,7 @@ python -m tensor2tensor/rl/record_ppo.py \
     --env=real \
     --epoch=-1
 
-Check flags definitions under imports for more details.
+查看导入下的标志定义以获取更多详细信息。
 """
 
 from __future__ import absolute_import

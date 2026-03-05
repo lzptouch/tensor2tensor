@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Clean discrete bottleneck as in https://arxiv.org/abs/1805.11063."""
+"""离散瓶颈层，参见 https://arxiv.org/abs/1805.11063。
+
+实现向量量化变分自编码器（VQ-VAE）中的离散瓶颈层。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,9 +27,17 @@ from tensorflow.python.training import moving_averages
 
 
 class DiscreteBottleneck(object):
-  """Discrete bottleneck class."""
+  """离散瓶颈类。
+
+  用于实现向量量化变分自编码器中的离散瓶颈层。
+  """
 
   def __init__(self, hparams):
+    """初始化离散瓶颈层。
+
+    参数：
+        hparams: 超参数
+    """
     self.hparams = hparams
     print ("self.hparams.z_size", self.hparams.z_size)
     # Set the discretization bottleneck specific things here

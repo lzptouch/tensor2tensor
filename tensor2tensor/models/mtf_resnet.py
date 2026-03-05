@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""ResNet model with model and data parallelism using MTF.
+"""使用 MTF 进行模型和数据并行的 ResNet 模型。
 
-Integration of Mesh tensorflow with ResNet to do model parallelism.
+Mesh-TensorFlow 与 ResNet 的集成，实现模型并行。
+
+Mesh-TensorFlow（MTF）是一个用于在多个设备上分配张量计算的库，
+支持模型并行和数据并行，适用于训练大规模深度学习模型。
 """
 
 from __future__ import absolute_import
@@ -37,7 +40,16 @@ BATCH_NORM_EPSILON = 1e-5
 
 
 def batch_norm_relu(inputs, is_training, relu=True):
-  """Block of batch norm and relu."""
+  """批量归一化和 ReLU 块。
+
+  参数：
+      inputs: 输入张量
+      is_training: 是否为训练模式
+      relu: 是否应用 ReLU 激活
+
+  返回：
+      经过批量归一化和可选 ReLU 处理后的输出张量
+  """
   inputs = mtf.layers.batch_norm(
       inputs,
       is_training,
@@ -56,27 +68,20 @@ def bottleneck_block(inputs,
                      projection_shortcut=None,
                      row_blocks_dim=None,
                      col_blocks_dim=None):
-  """Bottleneck block variant for residual networks with BN after convolutions.
+  """残差网络的瓶颈块变体，使用卷积后的批量归一化。
 
-  Args:
-    inputs: a `mtf.Tensor` of shape
-        `[batch_dim, row_blocks, col_blocks, rows, cols, in_channels]`.
-    filters: `int` number of filters for the first two convolutions. Note
-        that the third and final convolution will use 4 times as many filters.
-    is_training: `bool` for whether the model is in training mode.
-    strides: `int` block stride. If greater than 1, this block will ultimately
-        downsample the input.
-    projection_shortcut: `function` to use for projection shortcuts (typically
-        a 1x1 convolution to match the filter dimensions). If None, no
-        projection is used and the input is passed as unchanged through the
-        shortcut connection.
-    row_blocks_dim: a mtf.Dimension, row dimension which is
-        spatially partitioned along mesh axis
-    col_blocks_dim: a mtf.Dimension, row dimension which is
-        spatially partitioned along mesh axis
+  参数：
+      inputs: 形状为 `[batch_dim, row_blocks, col_blocks, rows, cols, in_channels]` 的 mtf.Tensor
+      filters: 整数，前两个卷积的滤波器数量。注意第三个和最后一个卷积将使用 4 倍多的滤波器
+      is_training: 布尔值，表示模型是否处于训练模式
+      strides: 整数，块步幅。如果大于 1，此块将最终对输入进行下采样
+      projection_shortcut: 用于投影快捷方式的函数（通常是 1x1 卷积以匹配滤波器维度）。
+          如果为 None，则不使用投影，输入通过快捷方式连接保持不变
+      row_blocks_dim: mtf.Dimension，沿网格轴空间分割的行维度
+      col_blocks_dim: mtf.Dimension，沿网格轴空间分割的列维度
 
-  Returns:
-    The output `Tensor` of the block.
+  返回：
+      块的输出张量
   """
   shortcut = inputs
 

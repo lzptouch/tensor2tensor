@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Optimization."""
+"""学习率调度。
+
+包含用于计算和管理学习率的各种函数。
+
+功能说明：
+- 提供多种学习率调度策略
+- 支持常数学习率、线性 warmup、线性衰减等
+- 支持余弦退火（cosine decay）
+- 集成 MLPerf 性能基准日志
+- 适用于不同训练阶段的学习率调整
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,12 +34,29 @@ import tensorflow.compat.v1 as tf
 
 
 def learning_rate_factor(name, step_num, hparams):
-  """Compute the designated learning rate factor from hparams."""
+  """根据超参数计算指定的学习率因子。
+  
+  Args:
+    name: 学习率调度策略名称
+    step_num: 当前训练步数
+    hparams: 超参数对象，包含各种学习率相关配置
+  
+  Returns:
+    学习率因子（浮点数）
+  
+  功能说明：
+  - 支持多种学习率调度策略
+  - 根据训练阶段动态调整学习率
+  - 实现 warmup 和 decay 机制
+  """
+  # 常数学习率：保持不变
   if name == "constant":
     tf.logging.info("Base learning rate: %f", hparams.learning_rate_constant)
     return hparams.learning_rate_constant
+  # 线性 warmup：从 0 线性增长到 1
   elif name == "linear_warmup":
     return tf.minimum(1.0, step_num / hparams.learning_rate_warmup_steps)
+  # 线性衰减：从 1 线性下降到 0
   elif name == "linear_decay":
     ret = (hparams.train_steps - step_num) / hparams.learning_rate_decay_steps
     return tf.minimum(1.0, tf.maximum(0.0, ret))

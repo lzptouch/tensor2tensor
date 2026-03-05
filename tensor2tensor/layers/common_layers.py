@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Layers common to multiple models."""
+"""多种模型通用的层。
+
+包含在多个深度学习模型中常用的层和工具函数。
+
+功能说明：
+- 提供通用的神经网络层实现
+- 支持卷积、池化、归一化等操作
+- 提供激活函数和 dropout 实现
+- 支持张量形状变换和操作
+- 适用于 Transformer、ResNet 等多种架构
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -37,13 +47,23 @@ from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import inplace_ops
 
 
-# TODO(lukaszkaiser): remove this function when not needed any more.
+# TODO(lukaszkaiser): 在不再需要时移除此函数
 def layers():
-  """Get the layers module good for TF 1 and TF 2 work for now."""
+  """获取适用于 TF 1 和 TF 2 的 layers 模块。
+  
+  Returns:
+    TensorFlow layers 模块的引用
+  
+  功能说明：
+  - 兼容 TensorFlow 1.x 和 2.x 版本
+  - 自动检测并返回合适的 layers 模块
+  """
   layers_module = None
   try:
+    # 尝试使用 TF 1.x 的 tf.layers
     layers_module = tf.layers
   except AttributeError:
+    # TF 2.x 中 tf.layers 不可用，尝试其他方式
     logging.info("Cannot access tf.layers, trying TF2 layers.")
   try:
     from tensorflow.python import tf2  # pylint: disable=g-direct-tensorflow-import,g-import-not-at-top
@@ -59,43 +79,40 @@ def layers():
     python_grad_func=lambda x, dy: tf.convert_to_tensor(dy),
     shape_func=lambda op: [op.inputs[0].get_shape()])
 def convert_gradient_to_tensor(x):
-  """Identity operation whose gradient is converted to a `Tensor`.
+  """将梯度转换为 `Tensor` 的恒等操作。
 
-  Currently, the gradient to `tf.concat` is particularly expensive to
-  compute if dy is an `IndexedSlices` (a lack of GPU implementation
-  forces the gradient operation onto CPU).  This situation occurs when
-  the output of the `tf.concat` is eventually passed to `tf.gather`.
-  It is sometimes faster to convert the gradient to a `Tensor`, so as
-  to get the cheaper gradient for `tf.concat`.  To do this, replace
-  `tf.concat(x)` with `convert_gradient_to_tensor(tf.concat(x))`.
+  当前，如果 dy 是 `IndexedSlices`，则 `tf.concat` 的梯度计算特别昂贵
+  （缺乏 GPU 实现迫使梯度操作在 CPU 上执行）。
+  当 `tf.concat` 的输出最终传递给 `tf.gather` 时会发生这种情况。
+  有时将梯度转换为 `Tensor` 会更快，以便获得更便宜的 `tf.concat` 梯度。
+  要执行此操作，请将 `tf.concat(x)` 替换为 `convert_gradient_to_tensor(tf.concat(x))`。
 
-  Args:
-    x: A `Tensor`.
+  参数：
+      x: `Tensor`。
 
-  Returns:
-    The input `Tensor`.
+  返回：
+      输入 `Tensor`。
   """
   return x
 
 
 def is_xla_compiled():
-  """Whether we are building graph that will be compiled by XLA.
+  """检查是否正在构建将由 XLA 编译的图。
 
-  This checks whether the code is executing within an XLA context.
+  检查代码是否在 XLA 上下文中执行。
 
-  If True, model authors should ensure the graph they build is compilable by
-  XLA. Specifically, they should ensure that all ops have XLA implementations
-  and that all shapes are statically known.
+  如果为 True，模型作者应确保构建的图可由 XLA 编译。
+  具体来说，他们应确保所有操作都有 XLA 实现，并且所有形状都是静态已知的。
 
-  Returns:
-    bool, whether the current graph will be compiled for XLA.
+  返回：
+      布尔值，表示当前图是否将为 XLA 编译。
   """
   ctxt = tf.get_default_graph()._get_control_flow_context()  # pylint: disable=protected-access
   return control_flow_util.GetContainingXLAContext(ctxt) is not None
 
 
 def to_float(x):
-  """Cast x to float; created because tf.to_float is deprecated."""
+  """将 x 转换为 float 类型；创建此函数是因为 tf.to_float 已弃用。"""
   return tf.cast(x, tf.float32)
 
 

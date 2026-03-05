@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities to assist in performing adversarial attack using Cleverhans."""
+"""辅助使用 Cleverhans 进行对抗攻击的工具函数。
+
+提供对抗样本生成和攻击的实用工具。
+"""
 
 from cleverhans import attacks
 from cleverhans import model
@@ -42,9 +45,21 @@ def random():
 
 
 class T2TAttackModel(model.Model):
-  """Wrapper of Cleverhans Model object."""
+  """Cleverhans Model 对象的包装器。
+
+  用于将 tensor2tensor 模型包装成 Cleverhans 攻击库可以使用的格式。
+  """
 
   def __init__(self, model_fn, features, params, config, scope=None):
+    """初始化攻击模型包装器。
+
+    参数：
+        model_fn: 模型函数
+        features: 输入特征字典
+        params: 模型参数
+        config: 配置对象
+        scope: 变量作用域名（可选）
+    """
     self._model_fn = model_fn
     self._params = params
     self._config = config
@@ -53,6 +68,14 @@ class T2TAttackModel(model.Model):
     self._scope = scope
 
   def fprop(self, x):
+    """前向传播函数。
+
+    参数：
+        x: 输入张量
+
+    返回：
+        包含 logits 的字典
+    """
     if x.name in self._logits_dict:
       return self._logits_dict[x.name]
 
@@ -77,7 +100,10 @@ class T2TAttackModel(model.Model):
 
 
 class RandomAttack(attacks.FastGradientMethod):
-  """Blackbox random sample attack."""
+  """黑盒随机采样攻击。
+
+  通过随机采样生成对抗样本的攻击方法。
+  """
 
   def __init__(self, m, back='tf', sess=None):
     if not isinstance(m, model.Model):

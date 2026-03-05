@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Shake-shake model for CIFAR."""
+"""用于 CIFAR 的 Shake-shake 模型。
+
+Shake-shake 正则化是一种针对具有分支架构的深度学习模型的正则化方法，
+通过在训练过程中随机混合不同分支的输出来提高模型的泛化能力。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,7 +33,17 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def shake_shake_skip_connection(x, output_filters, stride, is_training):
-  """Adds a residual connection to the filter x for the shake-shake model."""
+  """为 shake-shake 模型添加残差连接到滤波器 x。
+
+  参数：
+      x: 输入张量
+      output_filters: 输出滤波器数量
+      stride: 步幅
+      is_training: 是否为训练模式
+
+  返回：
+      添加残差连接后的输出张量
+  """
   curr_filters = common_layers.shape_list(x)[-1]
   if curr_filters == output_filters:
     return x
@@ -55,7 +69,19 @@ def shake_shake_skip_connection(x, output_filters, stride, is_training):
 
 def shake_shake_branch(x, output_filters, stride, rand_forward, rand_backward,
                        hparams):
-  """Building a 2 branching convnet."""
+  """构建一个 2 分支的卷积网络。
+
+  参数：
+      x: 输入张量
+      output_filters: 输出滤波器数量
+      stride: 步幅
+      rand_forward: 前向传播的随机权重
+      rand_backward: 反向传播的随机权重
+      hparams: 超参数对象
+
+  返回：
+      经过双分支卷积网络处理后的输出张量
+  """
   is_training = hparams.mode == tf_estimator.ModeKeys.TRAIN
   x = tf.nn.relu(x)
   x = tf.layers.conv2d(
@@ -77,7 +103,17 @@ def shake_shake_branch(x, output_filters, stride, rand_forward, rand_backward,
 
 
 def shake_shake_block(x, output_filters, stride, hparams):
-  """Builds a full shake-shake sub layer."""
+  """构建一个完整的 shake-shake 子层。
+
+  参数：
+      x: 输入张量
+      output_filters: 输出滤波器数量
+      stride: 步幅
+      hparams: 超参数对象
+
+  返回：
+      经过 shake-shake 块处理后的输出张量
+  """
   is_training = hparams.mode == tf_estimator.ModeKeys.TRAIN
   batch_size = common_layers.shape_list(x)[0]
 

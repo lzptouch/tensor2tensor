@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Diet variables are much more memory-efficient than regular variables.
+"""饮食变量比常规变量更节省内存。
 
-Using diet variables, we can reduce memory overhead per parameter from
-16 bytes to 2 bytes, allowing for up to 4B parameters per GPU.
+使用饮食变量，我们可以将每个参数的内存开销从 16 字节减少到 2 字节，
+从而允许每个 GPU 最多 40 亿个参数。
 
-Functions that build subgraphs with variables can be made to use diet variables
-by using the fn_with_diet_vars decorator.
+通过使用 fn_with_diet_vars 装饰器，可以使用饮食变量构建包含变量的子图。
 """
 
 from collections import defaultdict
@@ -32,10 +31,10 @@ import tensorflow.compat.v1 as tf
 
 
 def diet_adam_optimizer_params():
-  """Default hyperparameters for a DietAdamOptimizer.
+  """DietAdamOptimizer 的默认超参数。
 
-  Returns:
-    a hyperparameters object.
+  返回：
+      超参数对象
   """
   return hparam.HParams(
       quantize=True,  # use 16-bit fixed-point
@@ -52,18 +51,18 @@ def diet_adam_optimizer_params():
 
 
 def diet_expert(x, hidden_size, params):
-  """A two-layer feed-forward network with relu activation on hidden layer.
+  """具有 relu 激活的两层前馈网络。
 
-  Uses diet variables.
-  Recomputes hidden layer on backprop to save activation memory.
+  使用饮食变量。
+  在反向传播时重新计算隐藏层以节省激活内存。
 
-  Args:
-    x: a Tensor with shape [batch, io_size]
-    hidden_size: an integer
-    params: a diet variable HParams object.
+  参数：
+      x: 形状为 [batch, io_size] 的张量
+      hidden_size: 整数，隐藏层大小
+      params: 饮食变量超参数对象
 
-  Returns:
-    a Tensor with shape [batch, io_size]
+  返回：
+      形状为 [batch, io_size] 的张量
   """
 
   @fn_with_diet_vars(params)

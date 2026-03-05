@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""CelebA."""
+"""CelebA 人脸属性数据集。
+
+包含用于处理 CelebA 人脸属性分类数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +34,10 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_problem
 class ImageCeleba(image_utils.ImageProblem):
-  """CelebA dataset, aligned and cropped images."""
+  """CelebA 数据集，包含对齐和裁剪的人脸图像。
+
+  用于人脸属性分类和多任务学习。
+  """
   IMG_DATA = ("img_align_celeba.zip",
               "https://drive.google.com/uc?export=download&"
               "id=0B7EVK8r0v71pZjFTYXZWM3FlRnM")
@@ -65,17 +71,17 @@ class ImageCeleba(image_utils.ImageProblem):
     p.target_space_id = 1
 
   def generator(self, tmp_dir, how_many, start_from=0):
-    """Image generator for CELEBA dataset.
+    """CELEBA 数据集的图像生成器。
 
-    Args:
-      tmp_dir: path to temporary storage directory.
-      how_many: how many images and labels to generate.
-      start_from: from which image to start.
+    参数：
+        tmp_dir: 临时存储目录的路径
+        how_many: 要生成的图像和标签数量
+        start_from: 从哪个图像开始
 
-    Yields:
-      A dictionary representing the images with the following fields:
-      * image/encoded: the string encoding the image as JPEG,
-      * image/format: the string "jpeg" representing image format,
+    生成：
+        包含以下字段的图像字典：
+        * image/encoded: 将图像编码为 JPEG 的字符串
+        * image/format: 表示图像格式的字符串 "jpeg"
     """
     out_paths = []
     for fname, url in [self.IMG_DATA, self.LANDMARKS_DATA, self.ATTR_DATA]:

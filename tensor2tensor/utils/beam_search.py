@@ -13,7 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implementation of beam search with penalties."""
+"""带惩罚的束搜索实现。
+
+包含用于序列生成任务的束搜索算法实现。
+
+功能说明：
+- 实现束搜索（Beam Search）解码算法
+- 支持长度归一化和覆盖惩罚
+- 适用于机器翻译、文本摘要等序列生成任务
+- 提供高效的张量操作优化
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,22 +37,28 @@ import tensorflow.compat.v1 as tf
 from tensorflow.python.ops import inplace_ops
 from tensorflow.python.util import nest
 
-# Assuming EOS_ID is 1
+# 句子结束标记 ID（默认值为 1）
 EOS_ID = 1
-# Default value for INF
+# 默认无穷大值（用于掩码和过滤）
 INF = 1. * 1e7
 
 
 def _merge_beam_dim(tensor):
-  """Reshapes first two dimensions in to single dimension.
-
+  """将前两个维度合并为单个维度。
+  
   Args:
-    tensor: Tensor to reshape of shape [A, B, ...]
-
+    tensor: 要重塑的张量，形状为 [A, B, ...]
+  
   Returns:
-    Reshaped tensor of shape [A*B, ...]
+    重塑后的张量，形状为 [A*B, ...]
+  
+  功能说明：
+  - 用于束搜索中合并 batch 和 beam 维度
+  - 便于并行处理多个 beam 的候选序列
   """
+  # 获取张量的形状列表
   shape = common_layers.shape_list(tensor)
+  # 将 batch 维度乘以 beam_size，合并为一个维度
   shape[0] *= shape[1]  # batch -> batch * beam_size
   shape.pop(1)  # Remove beam dim
   return tf.reshape(tensor, shape)

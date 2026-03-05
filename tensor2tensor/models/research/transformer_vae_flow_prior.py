@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer VAE with Flow Priors for Non-Autoregressive MT."""
+"""使用流先验的 Transformer VAE，用于非自回归机器翻译。
+
+实现结合变分自编码器（VAE）和流模型的 Transformer 架构，
+用于非自回归机器翻译任务。流先验允许更灵活的潜在空间建模。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -41,9 +45,19 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class TransformerVaeFlowPrior(t2t_model.T2TModel):
-  """Transformer VAE using flow priors."""
+  """使用流先验的 Transformer VAE。
+
+  该模型结合了变分自编码器和流模型，
+  用于非自回归机器翻译任务。
+  """
 
   def __init__(self, *args, **kwargs):
+    """初始化 Transformer VAE Flow Prior 模型。
+
+    参数：
+        *args: 位置参数
+        **kwargs: 关键字参数
+    """
     super(TransformerVaeFlowPrior, self).__init__(*args, **kwargs)
     hparams = self._hparams
     if hparams.prior_type in ["affine", "additive", "rq"]:

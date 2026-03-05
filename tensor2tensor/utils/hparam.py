@@ -13,8 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Forked with minor changes from https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/training/python/training/hparam.py  pylint: disable=line-too-long
-"""Hyperparameter values."""
+# 从 https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/training/python/training/hparam.py 分叉，进行了少量更改
+"""超参数值。
+
+包含用于解析和管理超参数的类和函数。
+
+功能说明：
+- HParams 类：用于定义和管理超参数集合
+- 支持多种类型的超参数（整数、浮点数、字符串、布尔值等）
+- 提供超参数的解析、验证、序列化功能
+- 支持命令行参数格式的超参数覆盖
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

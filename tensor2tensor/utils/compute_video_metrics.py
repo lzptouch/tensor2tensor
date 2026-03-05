@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Computes and saves the metrics for video prediction and generation."""
+"""计算并保存视频预测和生成的指标。
+
+用于评估视频预测和生成任务的性能指标，如 PSNR、SSIM 等。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

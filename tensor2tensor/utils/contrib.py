@@ -13,9 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Wrappers around tf.contrib to dynamically import contrib packages.
+"""围绕 tf.contrib 的包装器，用于动态导入 contrib 包。
 
-This makes sure that libraries depending on T2T and TF2, do not crash at import.
+这确保依赖 T2T 和 TF2 的库在导入时不会崩溃。
+
+功能说明：
+- 提供 TensorFlow 1.x 和 2.x 的兼容性层
+- 动态导入 tf.contrib.slim
+- 在 TF2 中使用 tensorflow_addons 替代
+- 确保代码在不同 TF 版本间可移植
 """
 
 from __future__ import absolute_import
@@ -26,14 +32,14 @@ from absl import logging
 import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1 import estimator as tf_estimator
 
-# Check if we have contrib available
+# 检查是否有 contrib 可用
 try:
+  # TensorFlow 1.x：直接导入 contrib.slim
   from tensorflow.contrib import slim as tf_slim  # pylint: disable=g-import-not-at-top
   is_tf2 = False
 except:  # pylint: disable=bare-except
-  # tf.contrib, including slim and certain optimizers are not available in TF2
-  # Some features are now available in separate packages. We shim support for
-  # these as needed.
+  # TensorFlow 2.x：tf.contrib.slim 不可用，使用替代包
+  # 一些功能现在在单独的包中提供。我们根据需要支持这些。
   import tensorflow_addons as tfa  # pylint: disable=g-import-not-at-top
   import tf_slim  # pylint: disable=g-import-not-at-top
   is_tf2 = True

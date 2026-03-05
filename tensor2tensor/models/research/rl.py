@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Reinforcement learning models and parameters."""
+"""强化学习模型和参数。
+
+实现强化学习相关的模型、环境和超参数配置，
+包括 PPO 算法、环境包装器、模拟环境等。
+"""
 
 import collections
 import functools
@@ -46,7 +50,13 @@ import tensorflow_probability as tfp
 
 @registry.register_hparams
 def ppo_base_v1():
-  """Set of hyperparameters."""
+  """PPO 基础超参数集。
+
+  定义 PPO（近端策略优化）算法的基础超参数配置。
+
+  返回：
+      HParams 对象，包含 PPO 算法的超参数配置
+  """
   hparams = common_hparams.basic_params1()
   hparams.learning_rate_schedule = "constant"
   hparams.learning_rate_constant = 1e-4

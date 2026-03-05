@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Training of RL agent with PPO algorithm.
+r"""使用 PPO 算法训练 RL 代理。
 
-Example invocation:
+用于训练模型自由的强化学习代理，使用 PPO（近端策略优化）算法。
+
+示例调用：
 
 python -m tensor2tensor.rl.trainer_model_free \
     --output_dir=$HOME/t2t/rl_v1 \
     --hparams_set=pong_model_free \
     --hparams='batch_size=15'
 
-Example invocation with EnvProblem interface:
+使用 EnvProblem 接口的示例调用：
 
 python -m tensor2tensor.rl.trainer_model_free \
   --env_problem_name=tic_tac_toe_env_problem \
@@ -66,7 +68,15 @@ except:  # pylint: disable=bare-except
 
 
 def initialize_env_specs(hparams, env_problem_name):
-  """Initializes env_specs using the appropriate env."""
+  """使用适当的环境初始化 env_specs。
+
+  参数：
+      hparams: 超参数对象
+      env_problem_name: 环境问题名称
+
+  返回：
+      真实环境创建函数
+  """
   if env_problem_name:
     env = registry.env_problem(env_problem_name, batch_size=hparams.batch_size)
   else:

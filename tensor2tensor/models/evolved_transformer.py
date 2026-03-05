@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Evolved Transformer model.
+"""Evolved Transformer 模型。
 
-This implements the model described in arxiv.org/abs/1901.11117 .
+实现 arxiv.org/abs/1901.11117 中描述的模型。
+
+Evolved Transformer 是通过神经架构搜索发现的 Transformer 变体，
+具有改进的架构设计，包括双分支卷积和多头注意力机制。
 """
 
 from __future__ import absolute_import
@@ -48,26 +51,34 @@ _DECODER_FINAL_CONV_PADDING = 6
 
 
 def _capped_double_heads(num_heads, cap=16):
-  """Calculate the number of heads for the attention layers with more heads.
+  """计算具有更多头部的注意力层的头部数量。
 
-  The number of heads will be twice the normal amount (num_heads), until it
-  reaches |cap| heads.
+  头部数量将是正常数量（num_heads）的两倍，直到达到 |cap| 个头。
 
-  Args:
-    num_heads: the num_heads hparam for the model.
-    cap: the maximum number of heads |num_heads| will be doubled to.
+  参数：
+      num_heads: 模型的 num_heads 超参数
+      cap: |num_heads| 加倍的最大头部数量
 
-  Returns:
-    The number of heads for the attention layers that have more heads.
+  返回：
+      具有更多头部的注意力层的头部数量
   """
   return max(min(num_heads * 2, cap), num_heads)
 
 
 @registry.register_model
 class EvolvedTransformer(transformer.Transformer):
-  """The Evolved Transformer from arxiv.org/abs/1901.11117 ."""
+  """arxiv.org/abs/1901.11117 中的 Evolved Transformer。
+
+  通过神经架构搜索发现的 Transformer 变体，具有改进的架构设计。
+  """
 
   def __init__(self, *args, **kwargs):
+    """初始化 Evolved Transformer 模型。
+
+    参数：
+        *args: 位置参数
+        **kwargs: 关键字参数
+    """
     super(EvolvedTransformer, self).__init__(*args, **kwargs)
     self._encoder_function = evolved_transformer_encoder
     self._decoder_function = evolved_transformer_decoder

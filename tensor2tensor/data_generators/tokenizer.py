@@ -13,30 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A simple invertible tokenizer.
+"""简单的可逆分词器。
 
-Converts from a unicode string to a list of tokens
-(represented as Unicode strings).
+将 Unicode 字符串转换为标记列表（表示为 Unicode 字符串）。
 
-This tokenizer has the following desirable properties:
- - It is invertible.
- - Alphanumeric characters are broken away from non-alphanumeric characters.
- - A single space between words does not produce an extra token.
- - The full Unicode punctuation and separator set is recognized.
+此分词器具有以下理想特性：
+ - 它是可逆的。
+ - 字母数字字符与非字母数字字符分开。
+ - 单词之间的单个空格不会产生额外的标记。
+ - 识别完整的 Unicode 标点和分隔符集。
 
-The tokenization algorithm is as follows:
+分词算法如下：
 
-1.  Split the text into a list of tokens, splitting at every boundary of an
-    alphanumeric character and a non-alphanumeric character.  This produces
-    a list which alternates between "alphanumeric tokens"
-    (strings of alphanumeric characters) and "non-alphanumeric tokens"
-    (strings of non-alphanumeric characters).
+1. 将文本分割为标记列表，在每个字母数字字符和非字母数字字符的边界处分割。
+   这会产生一个在"字母数字标记"（字母数字字符串）和
+   "非字母数字标记"（非字母数字字符串）之间交替的列表。
 
-2.  Remove every token consisting of a single space, unless it is
-    the very first or very last token in the list.  These tokens are now
-    implied by the fact that there are two adjacent alphanumeric tokens.
+2. 移除由单个空格组成的每个标记，除非它是列表中的第一个或最后一个标记。
+   这些标记现在由两个相邻的字母数字标记暗示。
 
-e.g.  u"Dude - that's so cool."
+例如：u"Dude - that's so cool."
         -> [u"Dude", u" - ", u"that", u"'", u"s", u"so", u"cool", u"."]
 """
 
@@ -64,12 +60,13 @@ _ALPHANUMERIC_CHAR_SET = set(
 
 
 def encode(text):
-  """Encode a unicode string as a list of tokens.
+  """将 Unicode 字符串编码为标记列表。
 
-  Args:
-    text: a unicode string
-  Returns:
-    a list of tokens as Unicode strings
+  参数：
+      text: Unicode 字符串
+
+  返回：
+      标记列表（Unicode 字符串）
   """
   if not text:
     return []
@@ -89,12 +86,13 @@ def encode(text):
 
 
 def decode(tokens):
-  """Decode a list of tokens to a unicode string.
+  """将标记列表解码为 Unicode 字符串。
 
-  Args:
-    tokens: a list of Unicode strings
-  Returns:
-    a unicode string
+  参数：
+      tokens: Unicode 字符串列表
+
+  返回：
+      Unicode 字符串
   """
   token_is_alnum = [t[0] in _ALPHANUMERIC_CHAR_SET for t in tokens]
   ret = []
@@ -106,18 +104,17 @@ def decode(tokens):
 
 
 def _read_filepattern(filepattern, max_lines=None, split_on_newlines=True):
-  """Reads files matching a wildcard pattern, yielding the contents.
+  """读取匹配通配符模式的文件，生成内容。
 
-  Args:
-    filepattern: A wildcard pattern matching one or more files.
-    max_lines: If set, stop reading after reading this many lines.
-    split_on_newlines: A boolean. If true, then split files by lines and strip
-        leading and trailing whitespace from each line. Otherwise, treat each
-        file as a single string.
+  参数：
+      filepattern: 匹配一个或多个文件的通配符模式。
+      max_lines: 如果设置，则在读取这么多行后停止读取。
+      split_on_newlines: 布尔值。如果为 True，则按行分割文件并去除每行的前后空白。
+          否则，将每个文件视为单个字符串。
 
-  Yields:
-    The contents of the files as lines, if split_on_newlines is True, or
-    the entire contents of each file if False.
+  生成：
+      如果 split_on_newlines 为 True，则生成文件内容为行；
+      否则生成每个文件的完整内容。
   """
   filenames = sorted(tf.gfile.Glob(filepattern))
   lines_read = 0

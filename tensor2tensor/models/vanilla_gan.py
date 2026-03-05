@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Simple Generative Adversarial Model with two linear layers.
+"""简单的生成对抗模型，包含两个线性层。
 
-Example of how to create a GAN in T2T.
+T2T 中创建 GAN 的示例。
+
+生成对抗网络（GAN）由生成器和判别器组成，
+通过对抗训练来生成逼真的数据。
 """
 
 from __future__ import absolute_import
@@ -37,7 +40,21 @@ def lrelu(input_, leak=0.2, name="lrelu"):
 
 def deconv2d(
     input_, output_shape, k_h, k_w, d_h, d_w, stddev=0.02, name="deconv2d"):
-  """Deconvolution layer."""
+  """反卷积层。
+
+  参数：
+      input_: 输入张量
+      output_shape: 输出形状
+      k_h: 卷积核高度
+      k_w: 卷积核宽度
+      d_h: 高度步幅
+      d_w: 宽度步幅
+      stddev: 权重初始化的标准差
+      name: 作用域名称
+
+  返回：
+      反卷积后的输出张量
+  """
   with tf.variable_scope(name):
     w = tf.get_variable(
         "w", [k_h, k_w, output_shape[-1], input_.get_shape()[-1]],
@@ -50,22 +67,35 @@ def deconv2d(
 
 
 def reverse_gradient(x):
+  """反转梯度。
+
+  用于梯度反转层，在对抗训练中常用。
+
+  参数：
+      x: 输入张量
+
+  返回：
+      梯度反转后的张量
+  """
   return -x + tf.stop_gradient(2 * x)
 
 
 class AbstractGAN(t2t_model.T2TModel):
-  """Base class for all GANs."""
+  """所有 GAN 的基类。
+
+  提供生成对抗网络的基础实现，包括判别器和生成器的基本架构。
+  """
 
   def discriminator(self, x, is_training, reuse=False):
-    """Discriminator architecture based on InfoGAN.
+    """基于 InfoGAN 的判别器架构。
 
-    Args:
-      x: input images, shape [bs, h, w, channels]
-      is_training: boolean, are we in train or eval model.
-      reuse: boolean, should params be re-used.
+    参数：
+        x: 输入图像，形状为 [bs, h, w, channels]
+        is_training: 布尔值，表示是训练还是评估模式
+        reuse: 布尔值，表示是否应重用参数
 
-    Returns:
-      out_logit: the output logits (before sigmoid).
+    返回：
+        out_logit: 输出 logits（sigmoid 之前）
     """
     hparams = self.hparams
     with tf.variable_scope(

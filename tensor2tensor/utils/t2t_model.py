@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""T2TModel Base Class."""
+"""T2TModel 基类。
+
+包含 Tensor2Tensor 模型的核心实现。
+
+功能说明：
+- 提供所有 T2T 模型的基类实现
+- 支持训练、评估、预测三种模式
+- 实现损失计算和指标评估
+- 支持束搜索和自回归解码
+- 提供模型导出和服务功能
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

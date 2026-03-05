@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Autoencoders."""
+"""自编码器。
+
+实现各种自编码器模型，包括基本自编码器、变分自编码器（VAE）、
+矢量量化 VAE（VQ-VAE）等，用于图像和序列数据的压缩和生成。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,11 +37,34 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def reverse_gradient(x, lr=1.0):
-  return -lr * x + tf.stop_gradient((1.0 + lr) * x)
+  """反向梯度函数。
+
+  用于对抗训练和梯度反转层，通过在反向传播时反转梯度符号
+  来实现域适应等任务。
+
+  参数：
+      x: 输入张量
+      lr: 学习率缩放因子，默认为 1.0
+
+  返回：
+      经过梯度反转处理的张量
+  """
 
 
 def time_to_channels(embedded_video):
-  """Put time dimension on channels in an embedded video."""
+  """将时间维度转换为通道维度。
+
+  在嵌入的视频中将时间维度转换到通道维度，用于视频处理任务。
+
+  参数：
+      embedded_video: 嵌入的视频张量，形状为 [batch, time, height, width, channels]
+
+  返回：
+      转换后的张量，时间维度被合并到通道维度
+
+  异常：
+      ValueError: 如果输入张量不是 5 维
+  """
   video_shape = common_layers.shape_list(embedded_video)
   if len(video_shape) != 5:
     raise ValueError("Assuming videos given as tensors in the format "
@@ -52,9 +79,19 @@ def time_to_channels(embedded_video):
 
 @registry.register_model
 class AutoencoderBasic(t2t_model.T2TModel):
-  """A basic autoencoder, try with image_mnist_rev or image_cifar10_rev."""
+  """基本自编码器。
+
+  实现基础的自编码器架构，可用于图像压缩和重建任务。
+  尝试与 image_mnist_rev 或 image_cifar10_rev 一起使用。
+  """
 
   def __init__(self, *args, **kwargs):
+    """初始化基本自编码器。
+
+    参数：
+        *args: 位置参数
+        **kwargs: 关键字参数
+    """
     super(AutoencoderBasic, self).__init__(*args, **kwargs)
     self._cur_bottleneck_tensor = None
     self.is1d = None

@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TextCNN (see Convolutional Neural Networks for Sentence Classification)."""
+"""TextCNN（参见 Convolutional Neural Networks for Sentence Classification）。
+
+TextCNN 是一种用于句子分类的卷积神经网络模型，
+通过多个不同大小的卷积核捕获不同长度的 n-gram 特征。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,19 +33,22 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class TextCNN(t2t_model.T2TModel):
-  """Text CNN."""
+  """文本 CNN 模型。
+
+  实现用于句子分类的卷积神经网络，通过多个不同大小的卷积核
+  捕获不同长度的 n-gram 特征。
+  """
 
   def body(self, features):
-    """TextCNN main model_fn.
+    """TextCNN 主模型函数。
 
-    Args:
-      features: Map of features to the model. Should contain the following:
-          "inputs": Text inputs.
-              [batch_size, input_length, 1, hidden_dim].
-          "targets": Target encoder outputs.
-              [batch_size, 1, 1, hidden_dim]
-    Returns:
-      Final encoder representation. [batch_size, 1, 1, hidden_dim]
+    参数：
+        features: 特征字典，应包含以下内容：
+            "inputs": 文本输入，形状为 [batch_size, input_length, 1, hidden_dim]
+            "targets": 目标编码器输出，形状为 [batch_size, 1, 1, hidden_dim]
+
+    返回：
+        最终的编码器表示，形状为 [batch_size, 1, 1, hidden_dim]
     """
     hparams = self._hparams
     inputs = features["inputs"]

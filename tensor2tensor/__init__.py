@@ -13,3 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Tensor2Tensor 库的主模块。
+
+Tensor2Tensor 是一个用于深度学习机器学习任务的库，
+特别专注于序列到序列（seq2seq）模型。
+"""
+

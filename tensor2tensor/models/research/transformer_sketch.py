@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer Sketch for im2sketch problems.
+"""用于 im2sketch 问题的 Transformer Sketch 模型。
+
+实现用于图像到草图转换任务的 Transformer 变体，
+使用步长卷积来处理图像输入。
 """
 
 from __future__ import absolute_import
@@ -29,10 +32,26 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class TransformerSketch(transformer.Transformer):
-  """Transformer with strided convolutions."""
+  """带有步长卷积的 Transformer。
+
+  该模型在编码器上添加了步长卷积层，
+  用于处理图像到草图的转换任务。
+  """
 
   def encode(self, inputs, target_space, hparams, features=None, losses=None):
-    """Add layers of strided convolutions on top of encoder."""
+    """在编码器上添加步长卷积层。
+
+    参数：
+        inputs: 输入图像
+        target_space: 目标空间 ID
+        hparams: 超参数
+        features: 可选的特征字典
+        losses: 未使用
+
+    返回：
+        encoder_output: 编码器输出
+        encoder_decoder_attention_bias: 编码器 - 解码器注意力偏置
+    """
     with tf.variable_scope("downstride"):
       hparams = self.hparams
       kernel, strides = (4, 4), (2, 2)

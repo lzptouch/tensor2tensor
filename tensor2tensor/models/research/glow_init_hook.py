@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hook to run glow initialization on a larger batch."""
+"""用于在较大数据批次上运行 Glow 初始化的钩子。
+
+实现 Glow 模型的数据依赖初始化钩子，
+在训练开始前使用较大数据批次进行初始化。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,14 +27,21 @@ import tensorflow.compat.v1 as tf
 
 
 class GlowInitHook(tf.train.SessionRunHook):
-  """
-  Hook that runs data-dependent initialization once before the first step.
+  """Glow 初始化钩子。
 
-  The init op is stored in the tf collection glow_init_op. Look at the
-  "body" in glow.py for more details.
+  在第一步之前运行一次数据依赖的初始化。
+
+  初始化操作存储在 tf 集合 glow_init_op 中。
+  有关更多详细信息，请参阅 glow.py 中的"body"。
   """
 
   def after_create_session(self, session, coord):
+    """在会话创建后运行。
+
+    参数：
+        session: TensorFlow 会话
+        coord: 协调器
+    """
     del coord
     global_step = session.run(tf.train.get_global_step())
     if global_step == 0:

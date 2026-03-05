@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for video."""
+"""视频工具函数。
+
+包含用于视频处理和生成的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

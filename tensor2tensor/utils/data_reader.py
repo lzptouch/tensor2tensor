@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data reader module."""
+"""数据读取器模块。
+
+包含用于读取和处理训练数据的函数和类。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

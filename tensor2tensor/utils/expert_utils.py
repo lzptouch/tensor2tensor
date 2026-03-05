@@ -13,10 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for creating Sparsely-Gated Mixture-of-Experts Layers.
+"""用于创建稀疏门控混合专家层的工具函数。
 
-See "Outrageously Large Neural Networks"
+参见 "Outrageously Large Neural Networks"
 https://arxiv.org/abs/1701.06538
+
+包含用于构建大规模稀疏专家网络的辅助函数和类。
+
+功能说明：
+- 实现混合专家（MoE）层
+- 提供稀疏门控机制
+- 支持多设备并行专家计算
+- 适用于超大规模神经网络
+- 提供负载均衡和路由策略
 """
 
 from __future__ import absolute_import
@@ -34,6 +43,7 @@ from tensor2tensor.layers.vq_discrete import DiscreteBottleneck
 
 import tensorflow.compat.v1 as tf
 
+# 默认设备字符串
 DEFAULT_DEV_STRING = "existing_device"
 
 

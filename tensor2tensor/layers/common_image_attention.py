@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utils for attention mechanism for images."""
+"""图像注意力机制的工具函数。
+
+包含用于图像处理的注意力机制实现。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,19 +34,20 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 class AttentionType(object):
-  """Types of attention type used in cia."""
-  LOCAL_1D = "local_1d"
-  LOCAL_2D = "local_2d"
-  GLOBAL = "global"
-  GLOCAL = "global_local"
-  DILATED = "dilated"
-  MOE_LOCAL_1D = "moe_local1d"
-  LOCAL_BLOCK = "local_block"
-  NON_CAUSAL_1D = "local_1d_noncausal"
-  RELATIVE_LOCAL_1D = "rel_local_1d"
+  """cia 中使用的注意力类型。"""
+  LOCAL_1D = "local_1d"  # 一维局部注意力
+  LOCAL_2D = "local_2d"  # 二维局部注意力
+  GLOBAL = "global"  # 全局注意力
+  GLOCAL = "global_local"  # 全局 - 局部注意力
+  DILATED = "dilated"  # 膨胀注意力
+  MOE_LOCAL_1D = "moe_local1d"  # MoE 一维局部注意力
+  LOCAL_BLOCK = "local_block"  # 局部块注意力
+  NON_CAUSAL_1D = "local_1d_noncausal"  # 非因果一维局部注意力
+  RELATIVE_LOCAL_1D = "rel_local_1d"  # 相对一维局部注意力
 
   @staticmethod
   def get_choices():
+    """返回所有可用的注意力类型。"""
     return [
         AttentionType.GLOBAL,
         AttentionType.GLOCAL,

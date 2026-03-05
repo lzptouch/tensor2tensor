@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Supercomputer-based language model.
+"""基于超级计算机的语言模型。
 
-Uses model-parallelism.
+使用模型并行化技术。
 
-Each shard (device) has a similar structure with different weights.
-Occasional cross-replica-sum across shards.
+每个分片（设备）具有相似的结构但权重不同。
+偶尔在分片之间进行跨副本求和。
 
-Example problem: languagemodel_lm1b8k_packed
+示例问题：languagemodel_lm1b8k_packed
 
+该模型专为超大规模语言建模设计，
+通过在多个设备上分配模型参数来训练超大型模型。
 """
 
 from __future__ import absolute_import
@@ -46,9 +48,21 @@ ModeKeys = tf_estimator.ModeKeys  # pylint: disable=invalid-name
 
 @registry.register_model
 class SuperLM(t2t_model.T2TModel):
-  """Attention net.  See file docstring."""
+  """注意力网络。
+
+  基于模型并行化的超大规模语言模型，
+  通过在多个设备上分配模型参数来训练超大型 Transformer。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     # Remove dropout if not training
     hparams = self._hparams
     ps_devices = self._ps_devices

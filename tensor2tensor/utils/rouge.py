@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# coding=utf-8
-"""ROUGE metric implementation.
+"""ROUGE 指标实现。
 
-This is a modified and slightly extended version of
-https://github.com/miso-belica/sumy/blob/dev/sumy/evaluation/rouge.py.
+这是以下项目的修改和略微扩展版本：
+https://github.com/miso-belica/sumy/blob/dev/sumy/evaluation/rouge.py
+
+用于评估文本摘要质量的 ROUGE（Recall-Oriented Understudy for Gisting Evaluation）指标。
 """
 
 from __future__ import absolute_import
@@ -31,16 +32,16 @@ import tensorflow.compat.v1 as tf
 
 
 def _len_lcs(x, y):
-  """Returns the length of the Longest Common Subsequence between two seqs.
+  """返回两个序列之间最长公共子序列（LCS）的长度。
 
-  Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
+  来源：http://www.algorithmist.com/index.php/Longest_Common_Subsequence
 
-  Args:
-    x: sequence of words
-    y: sequence of words
+  参数：
+      x: 单词序列
+      y: 单词序列
 
-  Returns
-    integer: Length of LCS between x and y
+  返回：
+      整数：x 和 y 之间 LCS 的长度
   """
   table = _lcs(x, y)
   n, m = len(x), len(y)
@@ -48,18 +49,19 @@ def _len_lcs(x, y):
 
 
 def _lcs(x, y):
-  """Computes the length of the LCS between two seqs.
+  """计算两个序列之间 LCS 的长度。
 
-  The implementation below uses a DP programming algorithm and runs
-  in O(nm) time where n = len(x) and m = len(y).
-  Source: http://www.algorithmist.com/index.php/Longest_Common_Subsequence
+  下面的实现使用动态规划算法，时间复杂度为 O(nm)，
+  其中 n = len(x)，m = len(y)。
 
-  Args:
-    x: collection of words
-    y: collection of words
+  来源：http://www.algorithmist.com/index.php/Longest_Common_Subsequence
 
-  Returns:
-    Table of dictionary of coord and len lcs
+  参数：
+      x: 单词集合
+      y: 单词集合
+
+  返回：
+      包含坐标和 LCS 长度的字典表
   """
   n, m = len(x), len(y)
   table = {}
@@ -75,18 +77,18 @@ def _lcs(x, y):
 
 
 def _f_lcs(llcs, m, n):
-  """Computes the LCS-based F-measure score.
+  """计算基于 LCS 的 F-measure 分数。
 
-  Source: https://www.microsoft.com/en-us/research/publication/
+  来源：https://www.microsoft.com/en-us/research/publication/
   rouge-a-package-for-automatic-evaluation-of-summaries/
 
-  Args:
-    llcs: Length of LCS
-    m: number of words in reference summary
-    n: number of words in candidate summary
+  参数：
+      llcs: LCS 的长度
+      m: 参考摘要中的单词数
+      n: 候选摘要中的单词数
 
-  Returns:
-    Float. LCS-based F-measure score
+  返回：
+      基于 LCS 的 F-measure 分数（浮点数）
   """
   r_lcs = llcs / m
   p_lcs = llcs / n

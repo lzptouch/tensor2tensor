@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for PTB data-sets."""
+"""PTB（Penn Treebank）数据集的数据生成器。
+
+包含用于处理 Penn Treebank 语言模型数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -37,7 +40,14 @@ PTB_URL = "http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz"
 
 
 def _read_words(filename):
-  """Reads words from a file."""
+  """从文件中读取单词。
+
+  参数：
+      filename: 要读取的文件路径
+
+  返回：
+      单词列表
+  """
   with tf.gfile.GFile(filename, "r") as f:
     if sys.version_info[0] >= 3:
       return f.read().replace("\n", " %s " % EOS).split()
@@ -46,14 +56,14 @@ def _read_words(filename):
 
 
 def _build_vocab(filename, vocab_path, vocab_size):
-  """Reads a file to build a vocabulary of `vocab_size` most common words.
+  """从文件读取并构建包含 `vocab_size` 个最常见单词的词汇表。
 
-   The vocabulary is sorted by occurrence count and has one word per line.
+  词汇表按出现次数排序，每行一个单词。
 
-  Args:
-    filename: file to read list of words from.
-    vocab_path: path where to save the vocabulary.
-    vocab_size: size of the vocabulary to generate.
+  参数：
+      filename: 读取单词列表的文件
+      vocab_path: 保存词汇表的路径
+      vocab_size: 要生成的词汇表大小
   """
   data = _read_words(filename)
   counter = collections.Counter(data)
@@ -65,7 +75,16 @@ def _build_vocab(filename, vocab_path, vocab_size):
 
 
 def _get_token_encoder(vocab_dir, vocab_name, filename):
-  """Reads from file and returns a `TokenTextEncoder` for the vocabulary."""
+  """从文件读取并为词汇表返回 `TokenTextEncoder`。
+
+  参数：
+      vocab_dir: 词汇表目录
+      vocab_name: 词汇表名称
+      filename: 文件名
+
+  返回：
+      TokenTextEncoder 实例
+  """
   vocab_path = os.path.join(vocab_dir, vocab_name)
   if not tf.gfile.Exists(vocab_path):
     _build_vocab(filename, vocab_path, 10000)
@@ -73,14 +92,14 @@ def _get_token_encoder(vocab_dir, vocab_name, filename):
 
 
 def _maybe_download_corpus(tmp_dir, vocab_type):
-  """Download and unpack the corpus.
+  """下载并解压语料库。
 
-  Args:
-    tmp_dir: directory containing dataset.
-    vocab_type: which vocabulary are we using.
+  参数：
+      tmp_dir: 包含数据集的目录
+      vocab_type: 使用的词汇表类型
 
-  Returns:
-    The list of names of files.
+  返回：
+      文件名列表
   """
   filename = os.path.basename(PTB_URL)
   compressed_filepath = generator_utils.maybe_download(

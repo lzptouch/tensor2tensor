@@ -13,7 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Train and evaluate."""
+"""训练和评估工具。
+
+Tensor2Tensor 的主要训练脚本，用于训练和评估深度学习模型。
+
+功能说明：
+- 支持单机和多机分布式训练
+- 支持 TPU、GPU 和 CPU 多种硬件
+- 提供训练、评估、导出等完整功能
+- 集成 MLPerf 基准测试
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -148,7 +157,16 @@ flags.DEFINE_bool("gpu_automatic_mixed_precision", False,
 
 
 def set_hparams_from_args(args):
-  """Set hparams overrides from unparsed args list."""
+  """从未解析的参数列表中设置超参数覆盖。
+  
+  Args:
+    args: 命令行参数列表
+  
+  功能说明：
+  - 解析以 --hp_ 开头的参数
+  - 将这些参数添加到 FLAGS.hparams 中
+  - 支持动态覆盖超参数配置
+  """
   if not args:
     return
 
@@ -162,12 +180,14 @@ def set_hparams_from_args(args):
   while i < len(args):
     arg = args[i]
     if arg.startswith(hp_prefix):
+      # 提取超参数名称和值
       pairs.append((arg[len(hp_prefix):], args[i+1]))
       i += 2
     else:
       tf.logging.warn("Found unknown flag: %s", arg)
       i += 1
 
+  # 将超参数对转换为逗号分隔的字符串
   as_hparams = ",".join(["%s=%s" % (key, val) for key, val in pairs])
   if FLAGS.hparams:
     as_hparams = "," + as_hparams
@@ -175,17 +195,40 @@ def set_hparams_from_args(args):
 
 
 def create_hparams():
-  """Create hparams."""
+  """创建超参数对象。
+  
+  Returns:
+    HParams 对象，包含所有模型和数据集的配置参数
+  
+  功能说明：
+  - 从 FLAGS 加载超参数集名称和自定义参数
+  - 如果存在已保存的 hparams.json 文件则从中加载
+  - 返回完整的超参数配置
+  """
+  # 如果使用 TPU，检查超参数集是否兼容
   if FLAGS.use_tpu and "tpu" not in FLAGS.hparams_set:
     tf.logging.warn("Not all hyperparameter sets work on TPU. "
                     "Prefer hparams_sets with a '_tpu' suffix, "
                     "e.g. transformer_tpu, if available for your model.")
+  
+  # 构建超参数文件路径
   hparams_path = os.path.join(FLAGS.output_dir, "hparams.json")
+  # 使用 trainer_lib 创建超参数对象
   return trainer_lib.create_hparams(FLAGS.hparams_set, FLAGS.hparams,
                                     hparams_path=hparams_path)
 
 
 def create_experiment_fn():
+  """创建实验函数。
+  
+  Returns:
+    实验函数，用于创建和运行训练实验
+  
+  功能说明：
+  - 配置训练、评估和解码的所有参数
+  - 设置调度策略（schedule）
+  - 处理 TPU 和分布式训练配置
+  """
   return trainer_lib.create_experiment_fn(
       model_name=FLAGS.model,
       problem_name=FLAGS.problem,

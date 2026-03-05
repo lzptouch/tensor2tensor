@@ -13,8 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Resnets."""
-# Copied from cloud_tpu/models/resnet/resnet_model.py and modified
+"""ResNet 模型。
+
+从 cloud_tpu/models/resnet/resnet_model.py 复制并修改。
+
+包含 ResNet（残差网络）的实现，用于图像分类等任务。
+
+功能说明：
+- 实现深度残差网络（Residual Network）
+- 支持残差连接（skip connections），解决梯度消失问题
+- 支持批量归一化（Batch Normalization）
+- 适用于图像分类、目标检测等视觉任务
+- 提供多种深度的预定义配置（如 ResNet-18, ResNet-34, ResNet-50 等）
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,12 +41,20 @@ import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1 import estimator as tf_estimator
 
 
+# ========== 批量归一化超参数 ==========
+# BatchNorm 的动量参数（用于移动平均）
 BATCH_NORM_DECAY = 0.9
+# BatchNorm 的 epsilon 值（用于数值稳定性）
 BATCH_NORM_EPSILON = 1e-5
 
 
-# TODO(lukaszkaiser): remove or simplify after V2 work is done.
+# TODO(lukaszkaiser): 在 V2 工作完成后移除或简化此函数
 def layers():
+  """获取 TensorFlow 层模块。
+  
+  Returns:
+    tf.layers 模块的引用
+  """
   return common_layers.layers()
 
 
@@ -44,23 +63,31 @@ def batch_norm_relu(inputs,
                     relu=True,
                     init_zero=False,
                     data_format="channels_first"):
-  """Performs a batch normalization followed by a ReLU.
-
+  """执行批量归一化后接 ReLU 激活。
+  
   Args:
-    inputs: `Tensor` of shape `[batch, channels, ...]`.
-    is_training: `bool` for whether the model is training.
-    relu: `bool` if False, omits the ReLU operation.
-    init_zero: `bool` if True, initializes scale parameter of batch
-        normalization with 0 instead of 1 (default).
-    data_format: `str` either "channels_first" for `[batch, channels, height,
-        width]` or "channels_last for `[batch, height, width, channels]`.
-
+    inputs: 输入张量，形状为 `[batch, channels, ...]`
+    is_training: 布尔值，表示模型是否处于训练状态
+    relu: 布尔值，如果为 False，省略 ReLU 操作
+    init_zero: 布尔值，如果为 True，用 0 而不是 1（默认）初始化批量归一化的缩放参数
+              这有助于在某些情况下稳定训练初期
+    data_format: 字符串，"channels_first" 表示 `[batch, channels, height, width]`，
+                "channels_last" 表示 `[batch, height, width, channels]`
+  
   Returns:
-    A normalized `Tensor` with the same `data_format`.
+    具有相同 `data_format` 的归一化 Tensor
+  
+  功能说明：
+  - 批量归一化加速深度网络训练并提高稳定性
+  - 可选的 ReLU 激活引入非线性
+  - 支持训练和推理模式的自动切换
   """
+  # 根据 init_zero 设置 gamma 初始化器
   if init_zero:
+    # 使用零初始化器（用于某些特殊情况）
     gamma_initializer = tf.zeros_initializer()
   else:
+    # 使用一初始化器（标准做法）
     gamma_initializer = tf.ones_initializer()
 
   if data_format == "channels_first":

@@ -13,7 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Traditional Student-Teacher Distillation."""
+"""传统的教师 - 学生知识蒸馏。
+
+实现从教师网络到学生网络的知识蒸馏。
+
+首先，在任务上训练教师网络；其次，训练学生网络以执行任务，
+同时匹配教师的软化输出。有关更多详细信息，请参阅以下论文。
+
+传递给此模型的超参数包括所需的 {teacher/student}_model 和
+{teacher/student}_hparams。还要指定蒸馏温度和任务蒸馏平衡。
+
+Distilling the Knowledge in a Neural Network
+Hinton, Vinyals and Dean
+https://arxiv.org/abs/1503.02531
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,15 +41,14 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class Distillation(t2t_model.T2TModel):
-  """Distillation from a teacher to student network.
+  """从教师网络到学生网络的蒸馏。
 
-  First, a teacher is trained on a task; Second, a student is trained to perform
-  the task while matching the teacher's softened outputs. For more details, see
-  the paper below.
+  首先训练教师网络执行任务；然后训练学生网络执行任务，
+  同时匹配教师的软化输出。有关更多详细信息，请参阅论文。
 
-  In the hparams passed to this model include the desired
-  {teacher/student}_model and {teacher/student}_hparams to be used. Also,
-  specify the distillation temperature and task-distillation balance.
+  传递给此模型的超参数包括所需的
+  {teacher/student}_model 和 {teacher/student}_hparams。
+  还要指定蒸馏温度和任务蒸馏平衡。
 
   Distilling the Knowledge in a Neural Network
   Hinton, Vinyals and Dean
@@ -50,6 +62,16 @@ class Distillation(t2t_model.T2TModel):
                data_parallelism=None,
                decode_hparams=None,
                **kwargs):
+    """初始化蒸馏模型。
+
+    参数：
+        hparams: 超参数对象
+        mode: 模式（TRAIN/EVAL/PREDICT）
+        problem_hparams: 问题超参数
+        data_parallelism: 数据并行配置
+        decode_hparams: 解码超参数
+        **kwargs: 其他参数
+    """
     assert hparams.distill_phase in ["train", "distill"]
 
     if hparams.distill_phase == "train" and hparams.teacher_learning_rate:
@@ -70,6 +92,14 @@ class Distillation(t2t_model.T2TModel):
                          decode_hparams, **kwargs)
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     hp = self.hparams
     is_distill = hp.distill_phase == "distill"
 

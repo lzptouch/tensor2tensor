@@ -13,23 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Gene expression problems.
+"""基因表达问题。
 
-Inputs are bases ACTG (with indices assigned in that order).
+输入是碱基 ACTG（索引按该顺序分配）。
 
-Requires the h5py library.
+需要 h5py 库。
 
-File format expected:
-  * h5 file
-  * h5 datasets should include {train, valid, test}_{in, na, out}, which will
-    map to inputs, targets mask, and targets for the train, dev, and test
-    datasets.
-  * Each record in *_in is a bool 2-D numpy array with one-hot encoded base
-    pairs with shape [num_input_timesteps, 4]. The base order is ACTG.
-  * Each record in *_na is a bool 1-D numpy array with shape
-    [num_output_timesteps].
-  * Each record in *_out is a float 2-D numpy array with shape
-    [num_output_timesteps, num_predictions].
+期望的文件格式：
+  * h5 文件
+  * h5 数据集应包括 {train, valid, test}_{in, na, out}，将分别映射到
+    训练集、验证集和测试集的输入、目标掩码和目标
+  * *_in 中的每个记录是一个 bool 2-D numpy 数组，包含 one-hot 编码的碱基对，
+    形状为 [num_input_timesteps, 4]。碱基顺序为 ACTG
+  * *_na 中的每个记录是一个 bool 1-D numpy 数组，形状为 [num_output_timesteps]
+  * *_out 中的每个记录是一个 float 2-D numpy 数组，形状为
+    [num_output_timesteps, num_predictions]
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -57,27 +55,40 @@ MAX_CONCURRENT_PROCESSES = 10
 
 
 class GeneExpressionProblem(problem.Problem):
-  """Base Problem for gene expression datasets."""
+  """基因表达数据集的基类问题。
+
+  用于处理基因表达预测任务的基类。
+  """
 
   @property
   def download_url(self):
+    """下载 URL。"""
     raise NotImplementedError()
 
   @property
   def h5_file(self):
+    """H5 文件名。"""
     raise NotImplementedError()
 
   @property
   def num_output_predictions(self):
-    """Number of float predictions per timestep."""
+    """每个时间步的浮点预测数量。"""
     return 10
 
   @property
   def chunk_size(self):
+    """块大小。"""
     return 4
 
   def feature_encoders(self, data_dir):
-    del data_dir
+    """返回特征编码器。
+
+    参数：
+        data_dir: 数据目录
+
+    返回：
+        编码器字典
+    """
     return {
         "inputs": dna_encoder.DNAEncoder(chunk_size=self.chunk_size),
         # TODO(rsepassi): RealEncoder?

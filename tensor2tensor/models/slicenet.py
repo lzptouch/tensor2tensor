@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SliceNet."""
+"""SliceNet 模型。
+
+SliceNet 是一种基于切片注意力的序列到序列模型，
+使用可分离卷积和注意力机制来处理序列数据。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -32,7 +36,18 @@ import tensorflow.compat.v1 as tf
 
 # pylint: disable=unused-argument
 def attention(targets_shifted, inputs_encoded, norm_fn, hparams, bias=None):
-  """Complete attention layer with preprocessing."""
+  """完整的注意力层，包含预处理。
+
+  参数：
+      targets_shifted: 移位后的目标序列
+      inputs_encoded: 编码后的输入
+      norm_fn: 归一化函数
+      hparams: 超参数对象
+      bias: 注意力偏置
+
+  返回：
+      注意力层的输出
+  """
   separabilities = [hparams.separability, hparams.separability]
   if hparams.separability < 0:
     separabilities = [hparams.separability - 1, hparams.separability]

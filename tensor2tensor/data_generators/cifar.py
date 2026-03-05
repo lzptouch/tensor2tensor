@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""CIFAR."""
+"""CIFAR 数据集。
+
+包含用于处理 CIFAR-10 和 CIFAR-100 图像分类数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -54,7 +57,12 @@ _CIFAR100_TEST_FILES = ["test"]
 
 
 def _get_cifar(directory, url):
-  """Download and extract CIFAR to directory unless it is there."""
+  """下载并解压 CIFAR 数据到指定目录（如果不存在）。
+
+  参数：
+      directory: 目标目录
+      url: 下载 URL
+  """
   filename = os.path.basename(url)
   path = generator_utils.maybe_download(directory, filename, url)
   tarfile.open(path, "r:gz").extractall(directory)

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utils for audio."""
+"""音频工具函数。
+
+包含用于音频处理和特征提取的函数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,14 +29,14 @@ import tensorflow.compat.v1 as tf
 
 
 def add_delta_deltas(filterbanks, name=None):
-  """Compute time first and second-order derivative channels.
+  """计算时间一阶和二阶导数通道。
 
-  Args:
-    filterbanks: float32 tensor with shape [batch_size, len, num_bins, 1]
-    name: scope name
+  参数：
+      filterbanks: 形状为 [batch_size, len, num_bins, 1] 的 float32 Tensor
+      name: 作用域名称
 
-  Returns:
-    float32 tensor with shape [batch_size, len, num_bins, 3]
+  返回：
+      形状为 [batch_size, len, num_bins, 3] 的 float32 Tensor
   """
   delta_filter = np.array([2, 1, 0, -1, -2])
   delta_delta_filter = scipy.signal.convolve(delta_filter, delta_filter, "full")

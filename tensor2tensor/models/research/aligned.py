@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Single stack of transformations with no masking.
+"""无掩码的单层转换栈。
 
-Produces output aligned with inputs.
+生成与输入对齐的输出。
 
-Configurable using hyperparameters to use some combination of convolutions,
-attention, mixtures of experts, etc.
+可以使用超参数配置，以使用卷积、注意力、混合专家等的某些组合。
 
-A good problem for this model is languagemodel_wiki_scramble1k50 .
+该模型的一个好问题是 languagemodel_wiki_scramble1k50。
+
+该模型适用于需要输入输出对齐的任务，
+如序列标注和语言建模。
 """
 
 from __future__ import absolute_import
@@ -49,10 +51,18 @@ def _should_postprocess(layer_type):
 
 @registry.register_model
 class Aligned(t2t_model.T2TModel):
-  """Attention net.  See file docstring."""
+  """注意力网络。
+
+  无掩码的单层转换模型，生成与输入对齐的输出。
+  """
 
   @staticmethod
   def use_body_sharded():
+    """使用分片主体。
+
+    返回：
+        True，表示使用分片模式
+    """
     return True
 
   def body_sharded(self, sharded_features):

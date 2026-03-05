@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for translation data-sets."""
+"""翻译数据集的数据生成器。
+
+包含用于生成各种语言对翻译数据集的类和函数。
+
+功能说明：
+- 提供机器翻译任务的基类实现
+- 支持多种语言对的翻译任务
+- 提供数据清洗和预处理功能
+- 支持并行语料库的处理
+- 集成 BLEU 评估工具
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -36,26 +46,52 @@ import tensorflow.compat.v1 as tf
 
 
 class TranslateProblem(text_problems.Text2TextProblem):
-  """Base class for translation problems."""
+  """翻译问题的基类。
+  
+  用于处理序列到序列的翻译任务。
+  
+  功能说明：
+  - 继承自 Text2TextProblem
+  - 提供翻译任务的通用接口
+  - 支持训练集和验证集的生成
+  """
 
   @property
   def is_generate_per_split(self):
+    """是否按分割生成数据。
+    
+    Returns:
+      bool: True 表示分别生成训练集和验证集
+    """
     return True
 
   @property
   def approx_vocab_size(self):
+    """近似词汇表大小。"""
     return 2**15
 
   @property
   def datatypes_to_clean(self):
+    """需要清理的数据类型。"""
     return None
 
   def source_data_files(self, dataset_split):
-    """Files to be passed to compile_data."""
+    """传递给 compile_data 的文件。
+
+    参数：
+        dataset_split: 数据集分割（训练/验证/测试）
+
+    返回：
+        源数据文件列表
+    """
     raise NotImplementedError()
 
   def vocab_data_files(self):
-    """Files to be passed to get_or_generate_vocab."""
+    """传递给 get_or_generate_vocab 的文件。
+
+    返回：
+        词汇表数据文件列表
+    """
     return self.source_data_files(problem.DatasetSplit.TRAIN)
 
   def generate_samples(
@@ -64,6 +100,17 @@ class TranslateProblem(text_problems.Text2TextProblem):
       tmp_dir,
       dataset_split,
       custom_iterator=text_problems.text2text_txt_iterator):
+    """生成样本数据。
+
+    参数：
+        data_dir: 数据目录
+        tmp_dir: 临时目录
+        dataset_split: 数据集分割
+        custom_iterator: 自定义迭代器
+
+    返回：
+        样本生成器
+    """
     datasets = self.source_data_files(dataset_split)
     tag = "dev"
     datatypes_to_clean = None
@@ -86,13 +133,14 @@ class TranslateProblem(text_problems.Text2TextProblem):
 
 
 def compute_bleu_summaries(hook_args):
-  """Compute BLEU core summaries using the decoder output.
+  """使用解码器输出计算 BLEU 核心摘要。
 
-  Args:
-    hook_args: DecodeHookArgs namedtuple
-  Returns:
-    A list of tf.Summary values if hook_args.hparams contains the
-    reference file and the translated file.
+  参数：
+      hook_args: DecodeHookArgs 命名元组
+
+  返回：
+      如果 hook_args.hparams 包含参考文件和平译文件，
+      则返回 tf.Summary 值列表，否则返回 None。
   """
   decode_hparams = hook_args.decode_hparams
 
@@ -124,7 +172,15 @@ def compute_bleu_summaries(hook_args):
 
 
 def _preprocess_sgm(line, is_sgm):
-  """Preprocessing to strip tags in SGM files."""
+  """预处理以去除 SGM 文件中的标签。
+
+  参数：
+      line: 输入行
+      is_sgm: 是否为 SGM 文件
+
+  返回：
+      处理后的行
+  """
   if not is_sgm:
     return line
   # In SGM files, remove <srcset ...>, <p>, <doc ...> lines.

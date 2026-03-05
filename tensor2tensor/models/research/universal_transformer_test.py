@@ -14,7 +14,10 @@
 # limitations under the License.
 
 
-"""Tests for Transformer."""
+"""Universal Transformer 测试。
+
+测试 Universal Transformer 模型的功能和性能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,6 +41,16 @@ class UniversalTransformerTest(tf.test.TestCase):
 
   def get_model(self,
                 hparams, mode=tf_estimator.ModeKeys.TRAIN, has_input=True):
+    """获取 Universal Transformer 模型。
+
+    参数：
+        hparams: 模型超参数
+        mode: 模型模式，默认为 TRAIN
+        has_input: 是否有输入，默认为 True
+
+    返回：
+        模型实例和特征字典
+    """
     hparams.hidden_size = 8
     hparams.filter_size = 32
     hparams.num_heads = 1
@@ -66,6 +79,7 @@ class UniversalTransformerTest(tf.test.TestCase):
         hparams, mode, p_hparams), features
 
   def testTransformer(self):
+    """测试 Transformer 模型。"""
     model, features = self.get_model(
         universal_transformer.universal_transformer_base())
     logits, _ = model(features)

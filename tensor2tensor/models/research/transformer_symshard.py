@@ -13,31 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Test of the SymShard programming model.
+"""SymShard 编程模型的测试。
 
-Symmetric model parallellism.
+对称模型并行化。
 
-Each shard (device) has a similar structure with different weights.
-Occasional allreduce (sum) across shards.
+每个分片（设备）具有相似的结构但权重不同。
+偶尔在分片之间进行全归约（求和）。
 
-On TPU, we replicate the whole model on each core.  This is not the intended
-use, but we can test the model quality.
+在 TPU 上，我们在每个核心上复制整个模型。这不是预期的
+用途，但我们可以测试模型质量。
 
-Example problem: translate_ende_8k_packed
+示例问题：translate_ende_8k_packed
 
-Preliminary results on languagemodel_lm1b8k_packed (200k steps 8 cores)
-  transformer_tpu:             48M params   dev-log-ppl=-1.29   dev-BLEU=27.0
-  transformer_symshard_sh4:    49M params   dev-log-ppl=-1.30   dev-BLEU=26.4
-  transformer_symshard_base:   98M params   dev-log-ppl=-1.23   dev-BLEU=27.6
+在 languagemodel_lm1b8k_packed 上的初步结果（200k 步，8 核心）
+  transformer_tpu:             48M 参数   dev-log-ppl=-1.29   dev-BLEU=27.0
+  transformer_symshard_sh4:    49M 参数   dev-log-ppl=-1.30   dev-BLEU=26.4
+  transformer_symshard_base:   98M 参数   dev-log-ppl=-1.23   dev-BLEU=27.6
 
-  transformer_symshard_base with different mixing fraction (default=0.5):
+  transformer_symshard_base 使用不同的混合分数（默认=0.5）：
     mix_fraction=0.0    dev-log-ppl=-1.33
     mix_fraction=0.25   dev-log-ppl=-1.23
     mix_fraction=0.5    dev-log-ppl=-1.23
     mix_fraction=0.75   dev-log-ppl=-1.24
     mix_fraction=1.0    dev-log-ppl=-1.28
 
-TODO(noam): Make sure no one is using super_lm, then delete it.
+TODO(noam): 确保没有人使用 super_lm，然后删除它。
 """
 
 from __future__ import absolute_import
@@ -58,9 +58,20 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_model
 class TransformerSymshard(t2t_model.T2TModel):
-  """See file docstring."""
+  """对称分片的 Transformer 模型。
+
+  使用对称模型并行化技术，在多个设备上分配模型参数。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     hparams = self._hparams
     ps_devices = self._ps_devices
     single_device = (len(ps_devices) == 1)

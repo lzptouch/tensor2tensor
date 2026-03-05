@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Stacks and Queues implemented as encoder-decoder models.
+"""使用编码器 - 解码器模型实现的栈和队列。
 
-Based off of the following research:
+基于以下研究：
 
 Learning to Transduce with Unbounded Memory
 Edward Grefenstette, Karl Moritz Hermann, Mustafa Suleyman, Phil Blunsom
 https://arxiv.org/abs/1506.02516, 2015
 
+实现神经栈和神经队列，作为具有无界记忆能力的循环神经网络，
+可用于序列到序列的转换任务。
 """
 
 from __future__ import absolute_import
@@ -50,20 +52,23 @@ NeuralStackState = collections.namedtuple(
 
 
 class NeuralStackCell(tf.nn.rnn_cell.RNNCell):
-  """An RNN cell base class that can implement a stack or queue.
+  """RNN 细胞基类，可以实现栈或队列。
+
+  神经栈细胞是一种具有外部记忆存储的循环神经网络单元，
+  可以通过学习的操作来控制栈的读写。
   """
 
   def __init__(self, num_units, memory_size, embedding_size,
                num_read_heads=1, num_write_heads=1, reuse=None):
-    """Create a new NeuralStackCell.
+    """创建新的 NeuralStackCell。
 
-    Args:
-      num_units: The number of hidden units in the RNN cell.
-      memory_size: The maximum memory size allocated for the stack.
-      embedding_size:  The embedding width of the individual stack values.
-      num_read_heads: This should always be 1 for a regular stack.
-      num_write_heads: This should always be 1 for a regular stack.
-      reuse: Whether to reuse the weights.
+    参数：
+        num_units: RNN 细胞中的隐藏单元数量
+        memory_size: 为栈分配的最大记忆大小
+        embedding_size: 单个栈值的嵌入宽度
+        num_read_heads: 对于常规栈，这应该始终为 1
+        num_write_heads: 对于常规栈，这应该始终为 1
+        reuse: 是否重用权重
     """
     super(NeuralStackCell, self).__init__(dtype=tf.float32, _reuse=reuse)
     self._num_units = num_units

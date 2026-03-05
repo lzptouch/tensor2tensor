@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Training of model-based RL agents.
+r"""基于模型的 RL 代理训练。
 
-Example invocation:
+用于训练基于模型的强化学习代理，包括世界模型训练和策略训练。
+
+示例调用：
 
 python -m tensor2tensor.rl.trainer_model_based \
     --output_dir=$HOME/t2t/rl_v1 \
@@ -51,13 +53,29 @@ FLAGS = flags.FLAGS
 
 
 def real_env_step_increment(hparams):
-  """Real env step increment."""
+  """真实环境步数增量。
+
+  参数：
+      hparams: 超参数对象
+
+  返回：
+      每个轮次的真实环境步数增量
+  """
   return int(math.ceil(
       hparams.num_real_env_frames / hparams.epochs
   ))
 
 
 def world_model_step_increment(hparams, epoch):
+  """世界模型步数增量。
+
+  参数：
+      hparams: 超参数对象
+      epoch: 当前轮次
+
+  返回：
+      世界模型训练步数增量
+  """
   if epoch in [0, 1, 4, 9, 14]:
     multiplier = hparams.initial_epoch_train_steps_multiplier
   else:
@@ -66,7 +84,15 @@ def world_model_step_increment(hparams, epoch):
 
 
 def setup_directories(base_dir, subdirs):
-  """Setup directories."""
+  """设置目录。
+
+  参数：
+      base_dir: 基础目录路径
+      subdirs: 子目录列表
+
+  返回：
+      包含所有目录路径的字典
+  """
   base_dir = os.path.expanduser(base_dir)
   tf.gfile.MakeDirs(base_dir)
 

@@ -13,8 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""transformer (attention seq-seq model) with mixtures of experts.
+"""带有混合专家的 Transformer（注意力序列到序列模型）。
 
+实现结合了混合专家（MoE）层的 Transformer 模型，
+可以显著提高模型容量同时保持计算效率。
+
+Transformer 架构可以使用 layer_types 超参数来定义。
+如果未定义，则使用默认类型和 num_hidden_layers 作为回退值。
+
+使用示例：
+    "a/a/a/a/a/a": 原始基础 Transformer（6 层编码器和解码器，使用多头全注意力）
+    "a/a/a-moe/a": 4 层，第 3 层有 1 个 MoE
+    "loc/red/loc/red": 在局部注意力和记忆压缩注意力之间交替
+    "a/a/a#": 仅编码器模型（3 层）
+    "#a/a/a": 仅解码器模型（3 层）
+    "a/a-moe#a/a/a": 编码器（2 层，1 个 MoE），解码器（3 层）
+
+注意：并非所有组合都是可能的（某些注意力类型不一定与编码器兼容，
+或者不能接受某些类型的掩码）
 """
 
 from __future__ import absolute_import
@@ -55,10 +71,18 @@ SEP_FF = "-"
 
 @registry.register_model
 class TransformerMoe(t2t_model.T2TModel):
-  """Attention net.  See file docstring."""
+  """注意力网络。
+
+  带有混合专家的 Transformer 模型，支持模型并行化。
+  """
 
   @staticmethod
   def use_body_sharded():
+    """使用分片主体。
+
+    返回：
+        True，表示使用分片模式
+    """
     return True
 
   def body_sharded(self, sharded_features):

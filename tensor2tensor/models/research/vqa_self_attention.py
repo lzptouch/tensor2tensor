@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Self attention models for VQA."""
+"""VQA 的自注意力模型。
+
+实现用于视觉问答（VQA）任务的自注意力模型，
+对图像和问题都使用自注意力机制。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -37,19 +41,21 @@ from tensorflow.contrib.layers.python.layers import utils
 
 @registry.register_model
 class VqaSelfAttention(vqa_attention.VqaAttentionBaseline):
-  """Self attention both on image and question."""
+  """图像和问题都使用自注意力。
 
-  # @staticmethod
-  # def train_hooks():
-  #   restore_resnet_hook = restore_hook.RestoreHook(
-  #       # TODO(zichaoy): hard code the path given static function.
-  #       checkpoint_path="/home/zichaoy/resnet_v1_152.ckpt",
-  #       new_model_scope="vqa_self_attention/body/",
-  #       old_model_scope="resnet_v1_152/",
-  #   )
-  #   return [restore_resnet_hook]
+  该模型对图像特征和问题文本都应用自注意力机制，
+  以更好地捕捉两者内部的关系。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典，包含图像和问题
+
+    返回：
+        模型输出
+    """
     hp = self.hparams
     # pylint: disable=eval-used
     if hp.image_input_type == "image":

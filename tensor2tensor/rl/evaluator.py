@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Evaluation script for RL agents.
+r"""RL 代理评估脚本。
 
-Example invocation:
+用于评估强化学习代理的性能，支持在真实环境和模拟环境中进行评估。
+
+示例调用：
 
 python -m tensor2tensor.rl.evaluator \
     --policy_dir=$HOME/t2t/rl_v1/policy \

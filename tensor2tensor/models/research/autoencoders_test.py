@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Autoencoders tests."""
+"""自编码器测试。
+
+测试各种自编码器模型的功能和性能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,6 +36,16 @@ class AutoencoderTest(tf.test.TestCase):
 
   def get_mnist_random_output(self, model_name, hparams_set=None,
                               mode=tf_estimator.ModeKeys.TRAIN):
+    """获取 MNIST 数据集上模型的随机输出。
+
+    参数：
+        model_name: 模型名称
+        hparams_set: 超参数集名称，默认为 model_name
+        mode: 模型模式，默认为 TRAIN
+
+    返回：
+        模型的输出结果
+    """
     hparams_set = hparams_set or model_name
     x = np.random.randint(256, size=(1, 28, 28, 1))
     y = np.random.randint(10, size=(1, 1))
@@ -52,29 +65,40 @@ class AutoencoderTest(tf.test.TestCase):
 
   @property
   def mnist_output_shape(self):
+    """MNIST 输出形状属性。
+
+    返回：
+        MNIST 模型的标准输出形状
+    """
     return (1, 28, 28, 1, 256)
 
   def testAutoencoderBasic(self):
+    """测试基本自编码器。"""
     res = self.get_mnist_random_output("autoencoder_basic")
     self.assertEqual(res.shape, self.mnist_output_shape)
 
   def testAutoencoderAutoregressive(self):
+    """测试自回归自编码器。"""
     res = self.get_mnist_random_output("autoencoder_autoregressive")
     self.assertEqual(res.shape, self.mnist_output_shape)
 
   def testAutoencoderResidual(self):
+    """测试残差自编码器。"""
     res = self.get_mnist_random_output("autoencoder_residual")
     self.assertEqual(res.shape, self.mnist_output_shape)
 
   def testAutoencoderBasicDiscrete(self):
+    """测试基本离散自编码器。"""
     res = self.get_mnist_random_output("autoencoder_basic_discrete")
     self.assertEqual(res.shape, self.mnist_output_shape)
 
   def testAutoencoderResidualDiscrete(self):
+    """测试残差离散自编码器。"""
     res = self.get_mnist_random_output("autoencoder_residual_discrete")
     self.assertEqual(res.shape, self.mnist_output_shape)
 
   def testAutoencoderOrderedDiscrete(self):
+    """测试有序离散自编码器。"""
     res = self.get_mnist_random_output("autoencoder_ordered_discrete")
     self.assertEqual(res.shape, self.mnist_output_shape)
 

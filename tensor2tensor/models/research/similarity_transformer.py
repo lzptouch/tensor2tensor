@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Using Transformer Networks for String similarities."""
+"""使用 Transformer 网络进行字符串相似度计算。
+
+实现用于计算两个字符串之间相似度的 Transformer 模型。
+该模型使用两个 Transformer 网络分别嵌入字符串，
+并使用二元交叉熵损失进行训练。
+"""
 from tensor2tensor.data_generators import problem
 from tensor2tensor.layers import common_layers
 from tensor2tensor.models import transformer
@@ -25,16 +30,23 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class SimilarityTransformer(t2t_model.T2TModel):
-  """Transformer Model for Similarity between two strings.
+  """用于字符串相似度计算的 Transformer 模型。
 
-  This model defines the architecture using two transformer
-  networks, each of which embed a string and the loss is
-  calculated as a Binary Cross-Entropy loss. Normalized
-  Dot Product is used as the distance measure between two
-  string embeddings.
+  该模型定义了两个 Transformer 网络的架构，
+  每个网络嵌入一个字符串，损失计算为二元交叉熵损失。
+  使用归一化点积作为两个字符串嵌入之间的距离度量。
   """
 
   def top(self, body_output, _):
+    """模型的顶部处理函数。
+
+    参数：
+        body_output: 模型主体输出
+        _: 未使用的参数
+
+    返回：
+        模型输出
+    """
     return body_output
 
   def body(self, features):

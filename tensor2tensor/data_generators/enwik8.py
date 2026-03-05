@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for enwik8 data-set."""
+"""enwik8 数据集的数据生成器。
+
+包含用于处理 enwik8 字符级语言模型数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,13 +34,13 @@ import tensorflow.compat.v1 as tf
 
 
 def _maybe_download_corpus(tmp_dir):
-  """Download and unpack the corpus.
+  """下载并解压语料库。
 
-  Args:
-    tmp_dir: directory containing dataset.
+  参数：
+      tmp_dir: 包含数据集的目录
 
-  Returns:
-    path to entire corpus as a text file.
+  返回：
+      整个语料库的文本文件路径
   """
   corpus_url = "http://mattmahoney.net/dc/enwik8.zip"
   corpus_filename = os.path.basename(corpus_url)

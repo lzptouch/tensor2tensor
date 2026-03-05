@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""PPO learner."""
+"""PPO 学习器。
+
+实现 Proximal Policy Optimization (PPO) 算法用于策略学习。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

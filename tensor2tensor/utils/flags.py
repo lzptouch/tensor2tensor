@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common command-line flags."""
+"""通用命令行标志。
+
+定义 tensor2tensor 训练和评估的常用命令行参数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

@@ -13,28 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Adversarially attack a model.
+"""对抗性地攻击模型。
 
-This script adversarially attacks a model and evaluates accuracy at various
-  epsilons.
+此脚本对抗性地攻击模型，并评估各种 epsilon 值下的准确率。
 
-Params such as which epsilons to evaluate at and the attack algorithm are
-  specified by attack_params, see models/resnet.py for examples.
+参数（如要评估的 epsilon 值和攻击算法）由 attack_params 指定，
+有关示例，请参阅 models/resnet.py。
 
---ignore_incorrect will only attack those examples that are already correctly
-  classified by the model.
+--ignore_incorrect 将仅攻击模型已经正确分类的示例。
 
---surrogate_attack will attack a model (A) and evaluate adversarial examples for
-  A on a different model (B).
+--surrogate_attack 将攻击模型（A），并在不同的模型（B）上评估 A 的对抗样本。
 
-Example run:
-- train a resnet on cifar10:
-    bin/t2t_trainer.py --problem=image_cifar10 --hparams_set=resnet_cifar_32 \
+示例运行：
+- 在 cifar10 上训练 resnet：
+    bin/t2t_trainer.py --problem=image_cifar10 --hparams_set=resnet_cifar_32 \\
       --model=resnet
 
-- evaluate robustness using the FGSM attack:
-    bin/t2t_attack.py --attack_params_set=resnet_fgsm --problem=image_cifar10\
+- 使用 FGSM 攻击评估鲁棒性：
+    bin/t2t_attack.py --attack_params_set=resnet_fgsm --problem=image_cifar10\\
       --hparams_set=resnet_cifar_32 --model=resnet
+
+功能说明：
+- 实现对抗样本生成和攻击功能
+- 支持多种攻击算法（如 FGSM、PGD 等）
+- 评估模型在不同攻击强度下的鲁棒性
+- 支持替代模型攻击（迁移攻击）
 """
 
 import os
@@ -147,9 +150,24 @@ def prepare_data(problem, hparams, params, config):
 
 
 def main(argv):
+  """主函数：执行对抗攻击评估流程。
+  
+  Args:
+    argv: 命令行参数列表
+  
+  流程说明：
+  1. 初始化环境和导入模块
+  2. 创建超参数和攻击参数配置
+  3. 准备数据和模型
+  4. 对不同 epsilon 值生成对抗样本并评估准确率
+  """
+  # 设置日志级别
   tf.logging.set_verbosity(tf.logging.INFO)
+  # 设置随机种子
   trainer_lib.set_random_seed(FLAGS.random_seed)
+  # 导入用户自定义目录
   usr_dir.import_usr_dir(FLAGS.t2t_usr_dir)
+  # 检查是否需要显示注册表帮助
   t2t_trainer.maybe_log_registry_and_exit()
 
 

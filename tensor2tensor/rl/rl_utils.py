@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for RL training."""
+"""RL 训练工具函数。
+
+提供强化学习训练过程中的各种辅助函数，包括奖励计算、评估函数、
+环境创建、模型加载等功能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -44,7 +48,15 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def compute_mean_reward(rollouts, clipped):
-  """Calculate mean rewards from given epoch."""
+  """计算给定轮次的平均奖励。
+
+  参数：
+      rollouts: 轨迹列表，每个轨迹是一系列的帧
+      clipped: 是否使用裁剪后的奖励
+
+  返回：
+      平均奖励值
+  """
   reward_name = "reward" if clipped else "unclipped_reward"
   rewards = []
   for rollout in rollouts:

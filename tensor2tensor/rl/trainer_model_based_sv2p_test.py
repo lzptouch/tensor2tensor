@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tiny run of trainer_model_based with stochastic model. Smoke test."""
+"""使用 SV2P 随机模型运行 trainer_model_based。冒烟测试。
+
+用于测试基于模型的 RL 训练器的基本功能，特别是 SV2P（随机视频到视频预测）模型。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

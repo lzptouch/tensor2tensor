@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""IMDB Sentiment Classification Problem."""
+"""IMDB 情感分类问题。
+
+包含用于处理 IMDB 电影评论情感分类数据集的类和函数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,15 +34,20 @@ import tensorflow.compat.v1 as tf
 
 @registry.register_problem
 class SentimentIMDB(text_problems.Text2ClassProblem):
-  """IMDB sentiment classification."""
+  """IMDB 情感分类。
+
+  用于处理 IMDB 电影评论的情感二分类问题（正面/负面）。
+  """
   URL = "http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
 
   @property
   def is_generate_per_split(self):
+    """是否按分割生成数据。"""
     return True
 
   @property
   def dataset_splits(self):
+    """数据集分割配置。"""
     return [{
         "split": problem.DatasetSplit.TRAIN,
         "shards": 10,
@@ -50,15 +58,23 @@ class SentimentIMDB(text_problems.Text2ClassProblem):
 
   @property
   def approx_vocab_size(self):
-    return 2**13  # 8k vocab suffices for this small dataset.
+    """近似词汇表大小。"""
+    return 2**13  # 8k 词汇表对于这个小数据集已经足够
 
   @property
   def num_classes(self):
+    """类别数量。"""
     return 2
 
   def class_labels(self, data_dir):
-    del data_dir
-    return ["neg", "pos"]
+    """返回类别标签列表。
+
+    参数：
+        data_dir: 数据目录
+
+    返回：
+        类别标签列表
+    """
 
   def doc_generator(self, imdb_dir, dataset, include_label=False):
     dirs = [(os.path.join(imdb_dir, dataset, "pos"), True), (os.path.join(

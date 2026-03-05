@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Cycle GAN."""
+"""Cycle GAN。
+
+实现 CycleGAN（循环一致性生成对抗网络），用于无配对数据的图像到图像转换。
+CycleGAN 通过循环一致性损失来实现两个域之间的映射，无需成对的训练数据。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,6 +32,20 @@ import tensorflow.compat.v1 as tf
 
 
 def discriminator(x, compress, hparams, name, reuse=None):
+  """判别器网络。
+
+  用于区分真实图像和生成图像的判别器。
+
+  参数：
+      x: 输入图像
+      compress: 是否压缩输入
+      hparams: 超参数对象
+      name: 变量作用域名称
+      reuse: 是否重用变量
+
+  返回：
+      判别器输出，经过 tanh 激活
+  """
   with tf.variable_scope(name, reuse=reuse):
     x = tf.stop_gradient(2 * x) - x  # Reverse gradient.
     if compress:
@@ -39,12 +57,39 @@ def discriminator(x, compress, hparams, name, reuse=None):
 
 
 def generator(x, hparams, name, reuse=False):
+  """生成器网络。
+
+  用于生成假图像的生成器。
+
+  参数：
+      x: 输入图像
+      hparams: 超参数对象
+      name: 变量作用域名称
+      reuse: 是否重用变量
+
+  返回：
+      生成的图像
+  """
   with tf.variable_scope(name, reuse=reuse):
     return transformer_vae.residual_conv(x, 1, 3, hparams, "generator")
 
 
 def lossfn(real_input, fake_input, compress, hparams, lsgan, name):
-  """Loss function."""
+  """损失函数。
+
+  计算 GAN 的判别器和生成器损失。
+
+  参数：
+      real_input: 真实输入图像
+      fake_input: 生成的假图像
+      compress: 是否压缩
+      hparams: 超参数对象
+      lsgan: 是否使用 LSGAN 损失
+      name: 作用域名称
+
+  返回：
+      组合损失值
+  """
   eps = 1e-12
   with tf.variable_scope(name):
     d1 = discriminator(real_input, compress, hparams, "discriminator")

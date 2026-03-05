@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Summary-based SessionRunHooks."""
+"""基于摘要的 SessionRunHooks。
+
+提供基于 TensorBoard 摘要指标的钩子实现。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -26,28 +29,25 @@ from tensorboard.backend.event_processing import event_multiplexer
 
 
 class MetricsBasedHook(tf.train.SessionRunHook):
-  """Base class for hooks based on summary metrics.
+  """基于摘要指标的钩子基类。
 
-  Subclasses should override _process_metrics.
+  子类应重写 _process_metrics 方法。
 
-  If _process_metrics returns True, calls run_context.request_stop().
+  如果 _process_metrics 返回 True，则调用 run_context.request_stop()。
 
-  This can be used to something like "Stop after the loss has stopped decreasing
-  for 5000 steps.
+  这可以用于类似"在损失停止下降 5000 步后停止"的场景。
   """
   _RUN_NAME = "run%d"
 
   def __init__(self, events_dir, subdirs=None, tags=None, every_n_steps=1000):
-    """Construct MetricsBasedHook.
+    """构造 MetricsBasedHook。
 
-    Args:
-      events_dir: str, top-level directory containing events files.
-      subdirs: list<str>, subdirectories of events_dir that also contain
-        events files. Use "" to specify the top-level directory. Defaults to
-        [""].
-      tags: list<str>, names of metrics to collect. Default will collect all
-        metrics.
-      every_n_steps: int, collect metrics every n steps.
+    参数：
+        events_dir: str，包含事件文件的顶层目录
+        subdirs: list<str>，包含事件文件的 events_dir 子目录。
+                 使用""指定顶层目录。默认为[""]
+        tags: list<str>，要收集的指标名称。默认收集所有指标
+        every_n_steps: int，每 n 步收集一次指标
     """
     self._events_dir = events_dir
     self._subdirs = subdirs or [""]

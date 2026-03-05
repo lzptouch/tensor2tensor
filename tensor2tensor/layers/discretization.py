@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Discretization bottlenecks used to train discrete latent variables."""
+"""用于训练离散潜在变量的离散化瓶颈层。
+
+实现向量量化（VQ）和相关离散化技术。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

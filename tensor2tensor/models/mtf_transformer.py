@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer model."""
+"""Transformer 模型。
+
+基于 Mesh-TensorFlow 实现的 Transformer 模型，支持模型并行和数据并行。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,7 +37,11 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class MtfTransformer(mtf_model.MtfModel):
-  """Transformer in mesh_tensorflow."""
+  """Mesh-TensorFlow 中的 Transformer。
+
+  使用 Mesh-TensorFlow 实现的 Transformer 模型，支持在多个设备上进行
+  模型并行和数据并行训练。
+  """
 
   def __init__(self,
                hparams,
@@ -43,7 +50,16 @@ class MtfTransformer(mtf_model.MtfModel):
                data_parallelism=None,
                decode_hparams=None,
                **kwargs):
-    """Init with assignments of hparams.encoder_layers / decoder_layers."""
+    """使用 hparams.encoder_layers / decoder_layers 的分配进行初始化。
+
+    参数：
+        hparams: 超参数对象
+        mode: 模式（TRAIN/EVAL/PREDICT）
+        problem_hparams: 问题超参数
+        data_parallelism: 数据并行配置
+        decode_hparams: 解码超参数
+        **kwargs: 其他参数
+    """
     # Finalize encoder_layers, decoder_layers
     hparams.encoder_layers = (
         hparams.encoder_layers * hparams.encoder_replicate_factor)

@@ -13,17 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Seq2Edits model.
+"""Seq2Edits 模型。
 
-Seq2Edits is an adaptation of the Transformer that predicts span level edits
-and pairs them with tags. The Seq2Edits model is described in
+Seq2Edits 是 Transformer 的一种改编，用于预测跨度级别的编辑操作
+并将它们与标签配对。Seq2Edits 模型描述于：
 
   Stahlberg, Felix, and Kumar, Shankar. "Seq2Edits: Sequence Transduction Using
   Span-level Edit Operations." Proceedings of the 2020 Conference on Empirical
   Methods in Natural Language Processing (EMNLP). 2020.
   https://www.aclweb.org/anthology/2020.emnlp-main.418/
 
-T2T problem definitions for Seq2Edits are in data_generators/seq2edits.py.
+T2T 的 Seq2Edits 问题定义在 data_generators/seq2edits.py 中。
+
+该模型适用于语法纠错、文本编辑等任务。
 """
 
 from __future__ import absolute_import
@@ -43,19 +45,19 @@ import tensorflow.compat.v1 as tf
 
 
 def maybe_flatten4d3d(x):
-  """Flatten if tensor has 4 dimensions.
+  """如果张量有 4 个维度则展平。
 
-  Pass through otherwise.
+  否则直接传递。
 
-  This is useful since additional dimensions are sometimes removed on the TPU,
-  see e.g.
+  这很有用，因为有时在 TPU 上会移除额外的维度，
+  参见例如：
     https://github.com/tensorflow/tensor2tensor/tree/master/tensor2tensor/models/transformer.py?l=159&rcl=279807999
 
-  Args:
-    x: a tensor
+  参数：
+      x: 张量
 
-  Returns:
-    A 3D tensor if x is 4D, unmodified x otherwise.
+  返回：
+      如果 x 是 4D 则返回 3D 张量，否则返回未修改的 x
   """
   xshape = common_layers.shape_list(x)
   return common_layers.flatten4d3d(x) if len(xshape) == 4 else x

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Restore hooks."""
+"""恢复钩子（Restore hooks）。
+
+用于从检查点恢复变量的会话运行钩子实现。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,10 +29,22 @@ import tensorflow.compat.v1 as tf
 
 
 class RestoreHook(tf.train.SessionRunHook):
-  """Restore variables from a checkpoint path."""
+  """从检查点路径恢复变量。
+
+  用于在训练开始时从预训练检查点加载模型权重。
+  """
 
   def __init__(self, checkpoint_path="", new_model_scope="", old_model_scope="",
                include=None, exclude=None):
+    """初始化恢复钩子。
+
+    参数：
+        checkpoint_path: 检查点文件路径
+        new_model_scope: 新模型的作用域名
+        old_model_scope: 旧模型的作用域名（检查点中的作用域）
+        include: 要包含恢复的变量模式列表
+        exclude: 要排除恢复的变量模式列表
+    """
     self._checkpoint_path = checkpoint_path
     self._new_model_scope = new_model_scope
     self._old_model_scope = old_model_scope

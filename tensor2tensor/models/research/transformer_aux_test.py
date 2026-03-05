@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tensor2tensor.models.research.transformer_aux."""
+"""Transformer 辅助损失测试。
+
+测试 tensor2tensor.models.research.transformer_aux 模块的功能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -75,12 +78,26 @@ class TransformerAuxTest(parameterized.TestCase, tf.test.TestCase):
       ),
   )
   def test_shift_and_pad(self, tensor, shift, axis, target):
+    """测试 shift_and_pad 函数。
+
+    测试不同输入下的位移和填充操作。
+
+    参数：
+        tensor: 输入张量
+        shift: 位移量
+        axis: 位移轴
+        target: 期望输出
+    """
     with self.test_session() as session:
       output = transformer_aux.shift_and_pad(tensor, shift, axis)
       output_val = session.run(output)
       self.assertAllEqual(output_val, target)
 
   def test_transformer_aux_body(self):
+    """测试 Transformer Aux 模型主体。
+
+    测试 Transformer Aux 模型的前向传播和损失计算。
+    """
     batch_size = 3
     input_length = 5
     target_length = 16

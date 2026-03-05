@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utility to load code from an external user-supplied directory."""
+"""从外部用户提供的目录加载代码的工具函数。
+
+用于导入和加载用户自定义的 tensor2tensor 扩展模块。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -28,7 +31,11 @@ INTERNAL_USR_DIR_PACKAGE = "t2t_usr_dir_internal"
 
 
 def import_usr_dir(usr_dir):
-  """Import module at usr_dir, if provided."""
+  """导入 usr_dir 处的模块（如果提供）。
+
+  参数：
+      usr_dir: 用户目录路径或内部包名
+  """
   if not usr_dir:
     return
   if usr_dir == INTERNAL_USR_DIR_PACKAGE:

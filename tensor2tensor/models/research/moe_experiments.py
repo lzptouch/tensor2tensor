@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Languaeg modeling experiments in mtf."""
+"""MTF 中的语言建模实验。
+
+实现混合专家（MoE）模型在机器翻译任务上的架构实验，
+探索不同配置对模型性能的影响。
+"""
 
 
 from __future__ import absolute_import
@@ -28,14 +32,14 @@ from tensor2tensor.utils import registry
 
 @registry.register_hparams
 def xmoe_tr_dense_2k():
-  """Series of architectural experiments on Translation.
+  """在翻译任务上的一系列架构实验。
 
-  # run on 8-core setup
+  在 8 核心设置上运行
 
-  119M params, einsum=0.95e13
+  119M 参数，einsum=0.95e13
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = mtf_transformer2.mtf_bitransformer_base()
   hparams.encoder_layers = ["self_att", "drd"] * 4
@@ -48,12 +52,12 @@ def xmoe_tr_dense_2k():
 
 @registry.register_hparams
 def xmoe_tr_dense_32k():
-  """Bigger d_ff.
+  """更大的 d_ff。
 
-  623M params, einsum=3.42e13
+  623M 参数，einsum=3.42e13
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = xmoe_tr_dense_2k()
   hparams.d_ff = 32768
@@ -62,13 +66,12 @@ def xmoe_tr_dense_32k():
 
 @registry.register_hparams
 def xmoe_tr_1d():
-  """Mixture of experts (16 experts).
+  """混合专家（16 个专家）。
 
+  623M 参数，einsum=1.09e13
 
-  623M Params, einsum=1.09e13
-
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = xmoe_tr_dense_2k()
   hparams.encoder_layers = ["self_att", "moe_1d"] * 4
@@ -81,12 +84,12 @@ def xmoe_tr_1d():
 
 @registry.register_hparams
 def xmoe_tr_2d():
-  """Mixture of experts (16 experts).
+  """二维混合专家（16 个专家）。
 
-  623M Params, einsum=1.09e13
+  623M 参数，einsum=1.09e13
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = xmoe_tr_dense_2k()
   hparams.mesh_shape = "b0:2;b1:4"
@@ -102,14 +105,13 @@ def xmoe_tr_2d():
 
 @registry.register_hparams
 def xmoe_dense_4k():
-  """Series of architectural experiments on cheap language models.
+  """语言模型的一系列架构实验。
 
-  For all of these architectures, we run on languagemodel_lm1b8k_packed
-  for 32000 steps.
+  所有这些架构都在 languagemodel_lm1b8k_packed 上运行 32000 步。
 
-  All log-perplexities are per-token - multiply by 1.298 for per-word
+  所有对数困惑度都是每token的 - 乘以 1.298 得到每词的
 
-  Results:
+  结果：
   model             params(M)  einsum  alltoall  mxu-util  log-ppl
   xmoe_dense_4k     30         3.0e12  0         45%        3.31
   xmoe_dense_8k     46         4.7e12  0         49%        3.24
@@ -118,20 +120,20 @@ def xmoe_dense_4k():
   xmoe_top_2_c15    282        4.5e12  4.0e8     38%        3.07
   xmoe_2d           282        5.3e12  7.6e8     34%        3.06
 
-  Trained at 4x the batch size:
+  以 4 倍批量大小训练：
   xmoe_2d_88        1090       2.1e13  3.0e9     24%        3.07
 
-  Note: configurations and code are likely to change without notice.
+  注意：配置和代码可能会随时更改，恕不另行通知。
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = mtf_transformer.mtf_transformer_base_lm()
   hparams.attention_dropout = 0.0
   hparams.relu_dropout = 0.0
   hparams.layer_prepostprocess_dropout = 0.0
 
-  # The following hparams are constant across all these experiments.
+  # 以下超参数在所有这些实验中都是恒定的。
   hparams.batch_size = 128
   hparams.d_model = 512
   hparams.d_kv = 128
@@ -140,7 +142,7 @@ def xmoe_dense_4k():
   hparams.shared_embedding_and_softmax_weights = False
   hparams.learning_rate_schedule = "rsqrt_decay"
 
-  # We will vary the following parameters related to the ffn/moe layers.
+  # 我们将改变以下与 ffn/moe 层相关的参数。
   hparams.d_ff = 4096
   hparams.layout = "batch:batch;vocab:model;d_ff:model;heads:model"
   hparams.mesh_shape = "batch:8"
@@ -149,6 +151,11 @@ def xmoe_dense_4k():
 
 @registry.register_hparams
 def xmoe_dense_8k():
+  """d_ff=8192 的密集模型。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_dense_4k()
   hparams.d_ff = 8192
   return hparams
@@ -156,7 +163,11 @@ def xmoe_dense_8k():
 
 @registry.register_hparams
 def xmoe_dense_64k():
-  """Very wide layer- run on 4x4."""
+  """非常宽的层 - 在 4x4 上运行。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_dense_4k()
   hparams.d_ff = 65536
   hparams.mesh_shape = "model:4,batch:8"
@@ -165,7 +176,11 @@ def xmoe_dense_64k():
 
 @registry.register_hparams
 def xmoe_top_2():
-  """Mixture of experts (16 experts)."""
+  """混合专家（16 个专家）。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_dense_4k()
   moe.set_default_moe_hparams(hparams)
   hparams.mesh_shape = "all:8"
@@ -175,7 +190,11 @@ def xmoe_top_2():
 
 @registry.register_hparams
 def xmoe_top_2_c15():
-  """Mixture of experts."""
+  """混合专家（容量因子为 1.5）。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_top_2()
   hparams.moe_capacity_factor_train = 1.5
   return hparams
@@ -183,7 +202,11 @@ def xmoe_top_2_c15():
 
 @registry.register_hparams
 def xmoe_2d():
-  """Two-dimensional hierarchical mixture of 16 experts."""
+  """16 个专家的二维分层混合。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_top_2()
   hparams.decoder_layers = ["att", "hmoe"] * 4
   hparams.mesh_shape = "b0:2;b1:4"
@@ -195,14 +218,14 @@ def xmoe_2d():
 
 @registry.register_hparams
 def xmoe_2d_debug():
-  """For debugging.
+  """用于调试。
 
-  Running this model on TPU without the hack of casting to bfloat16 for
-  alltoall results in nan on the first step.
-  TODO(noam): debug
+  在 TPU 上运行此模型时，如果没有将 alltoall 强制转换为 bfloat16 的技巧，
+  会在第一步导致 nan。
+  TODO(noam): 调试
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = xmoe_2d()
   hparams.decoder_layers = ["hmoe"] * 1
@@ -212,7 +235,11 @@ def xmoe_2d_debug():
 
 @registry.register_hparams
 def xmoe_2d_c15():
-  """Mixture of experts."""
+  """混合专家（容量因子为 1.5）。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_2d()
   hparams.moe_capacity_factor_train = 1.5
   return hparams
@@ -220,7 +247,11 @@ def xmoe_2d_c15():
 
 @registry.register_hparams
 def xmoe_2d_x64():
-  """Two-dimensional hierarchical mixture of 64 experts."""
+  """64 个专家的二维分层混合。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe_2d()
   # hparams.mesh_shape = "b0:4;b1:8"
   hparams.outer_batch_size = 4
@@ -230,29 +261,29 @@ def xmoe_2d_x64():
 
 @registry.register_hparams
 def xmoe2_dense(sz):
-  """Series of architectural experiments on language modeling.
+  """语言建模的一系列架构实验。
 
-  Larger models than the ones above.
+  比上面的模型更大。
 
-  All models are trained on sequences of 1024 tokens.
+  所有模型都在 1024 个token的序列上训练。
 
-  We assume infinite training data, so no dropout necessary.
-  We process 2^36 tokens in training = 524288 steps at batch size 128
+  我们假设无限的训练数据，因此不需要 dropout。
+  我们在训练中处理 2^36 个token = 524288 步，批量大小为 128
 
-  TODO(noam): find a large enough dataset for these experiments.
+  TODO(noam): 为这些实验找到足够大的数据集。
 
-  You can use languagemodel_wiki_noref_v32k_l1k, but this is too small,
-  (1 epoch = ~46000 steps) so training will cover about 11 epochs.
+  你可以使用 languagemodel_wiki_noref_v32k_l1k，但这太小了，
+  （1 个 epoch = ~46000 步）所以训练将覆盖大约 11 个 epoch。
 
-  Note: configurations and code are likely to change without notice.
+  注意：配置和代码可能会随时更改，恕不另行通知。
 
-  Run on TPU 4x4 for 524288 steps unless otherwise indicated.
+  在 TPU 4x4 上运行 524288 步，除非另有说明。
 
-  Args:
-    sz: an integer
+  参数：
+      sz: 整数
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = mtf_transformer.mtf_transformer_paper_lm(sz)
   hparams.attention_dropout = 0.0
@@ -269,34 +300,54 @@ def xmoe2_dense(sz):
 
 @registry.register_hparams
 def xmoe2_dense_0():
+  """规模为 0 的密集模型。
+
+  返回：
+      HParams 对象
+  """
   return xmoe2_dense(0)
 
 
 @registry.register_hparams
 def xmoe2_dense_1():
+  """规模为 1 的密集模型。
+
+  返回：
+      HParams 对象
+  """
   return xmoe2_dense(1)
 
 
 @registry.register_hparams
 def xmoe2_dense_2():
+  """规模为 2 的密集模型。
+
+  返回：
+      HParams 对象
+  """
   return xmoe2_dense(2)
 
 
 @registry.register_hparams
 def xmoe2_dense_3():
+  """规模为 3 的密集模型。
+
+  返回：
+      HParams 对象
+  """
   return xmoe2_dense(3)
 
 
 @registry.register_hparams
 def xmoe2_v1():
-  """Model incorporating mixture-of-experts and local-attention.
+  """包含混合专家和局部注意力的模型。
 
-  ~6B parameters
+  ~6B 参数
 
-  32 experts in 3 hierarchichal moe layers.
+  3 个分层 moe 层中有 32 个专家。
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = xmoe2_dense(0)
   moe.set_default_moe_hparams(hparams)
@@ -316,7 +367,11 @@ def xmoe2_v1():
 
 @registry.register_hparams
 def xmoe2_v1_x128():
-  """128 experts, ~25B params - Train for 131072 steps on 8x8."""
+  """128 个专家，~25B 参数 - 在 8x8 上训练 131072 步。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1()
   hparams.moe_num_experts = [16, 8]
   hparams.outer_batch_size = 8
@@ -328,7 +383,11 @@ def xmoe2_v1_x128():
 
 @registry.register_hparams
 def xmoe2_tiny():
-  """Test on local cpu."""
+  """在本地 CPU 上测试。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1()
   hparams.decoder_layers = [
       "local_att", "att", "compressed_att", "drd", "hmoe"]
@@ -343,7 +402,11 @@ def xmoe2_tiny():
 
 @registry.register_hparams
 def xmoe2_v1_l4k():
-  """With sequence length 4096."""
+  """序列长度为 4096。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1()
   hparams.batch_size = 32
   hparams.max_length = 4096
@@ -354,7 +417,11 @@ def xmoe2_v1_l4k():
 
 @registry.register_hparams
 def xmoe2_v1_l4k_local_only():
-  """With sequence length 4096."""
+  """序列长度为 4096，只使用局部注意力。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1_l4k()
   hparams.decoder_layers = [
       "local_att" if l == "att" else l for l in hparams.decoder_layers]
@@ -363,7 +430,11 @@ def xmoe2_v1_l4k_local_only():
 
 @registry.register_hparams
 def xmoe2_v1_l4k_global_only():
-  """With sequence length 4096."""
+  """序列长度为 4096，只使用全局注意力。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1_l4k()
   hparams.decoder_layers = [
       "att" if l == "local_att" else l for l in hparams.decoder_layers]
@@ -372,7 +443,11 @@ def xmoe2_v1_l4k_global_only():
 
 @registry.register_hparams
 def xmoe2_v1_l4k_compressed_c4():
-  """With compressed attention."""
+  """使用压缩注意力，压缩因子为 4。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1_l4k()
   hparams.decoder_layers = [
       "compressed_att" if l == "att" else l for l in hparams.decoder_layers]
@@ -382,7 +457,11 @@ def xmoe2_v1_l4k_compressed_c4():
 
 @registry.register_hparams
 def xmoe2_v1_l4k_compressed_c8():
-  """With compressed attention."""
+  """使用压缩注意力，压缩因子为 8。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1_l4k_compressed_c4()
   hparams.compression_factor = 8
   return hparams
@@ -390,30 +469,30 @@ def xmoe2_v1_l4k_compressed_c8():
 
 @registry.register_hparams
 def wiki_2x2_base():
-  """Set of architectural experiments - language model on wikipedia on a 2x2.
+  """一系列架构实验 - 在 2x2 上的维基百科语言模型。
 
-  1 epoch = ~180k steps at batch size 32 - we may never finish an epoch!
+  1 个 epoch = ~180k 步，批量大小为 32 - 我们可能永远不会完成一个 epoch！
 
-  Returns:
-    a hparams
+  返回：
+      HParams 对象
   """
   hparams = mtf_transformer.mtf_transformer_base_lm()
   hparams.shared_embedding_and_softmax_weights = False
-  # no dropout - dataset is big enough to avoid overfitting.
+  # 没有 dropout - 数据集足够大，可以避免过拟合。
   hparams.attention_dropout = 0.0
   hparams.relu_dropout = 0.0
   hparams.layer_prepostprocess_dropout = 0.0
   hparams.max_length = 1024
-  # 4 sequences per core
+  # 每个核心 4 个序列
   hparams.batch_size = 32
-  # We don't use linear decay in these experiments, since we don't want
-  # a sharp jump in quality at the end of the training schedule.
-  # You can insert this once you find the right architecture.
+  # 我们在这些实验中不使用线性衰减，因为我们不希望
+  # 在训练计划结束时质量急剧跳跃。
+  # 一旦找到正确的架构，你可以插入这个。
   hparams.learning_rate_schedule = "rsqrt_decay"
   hparams.mesh_shape = "all:8"
   hparams.layout = "batch:all;experts:all"
 
-  # parameters for mixture-of-experts
+  # 混合专家的参数
   moe.set_default_moe_hparams(hparams)
   hparams.moe_num_experts = 16
   hparams.moe_hidden_size = 8192
@@ -429,6 +508,11 @@ def wiki_2x2_base():
 
 @registry.register_hparams
 def wiki_2x2_v1():
+  """维基百科语言模型 v1 版本。
+
+  返回：
+      HParams 对象
+  """
   hparams = wiki_2x2_base()
   hparams.decoder_layers = (
       ["local_att", "local_att", "drd",
@@ -438,6 +522,11 @@ def wiki_2x2_v1():
 
 @registry.register_hparams
 def wiki_2x2_local():
+  """只使用局部注意力的维基百科语言模型。
+
+  返回：
+      HParams 对象
+  """
   hparams = wiki_2x2_base()
   hparams.decoder_layers = ["local_att", "drd"] * 6
   return hparams
@@ -445,7 +534,11 @@ def wiki_2x2_local():
 
 @registry.register_hparams
 def denoise_m15():
-  """Denoising experiment."""
+  """去噪实验。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_dense_0()
   hparams.decoder_type = "denoising"
   hparams.noising_spec_train = {"type": "mask", "prob": 0.15}
@@ -454,7 +547,11 @@ def denoise_m15():
 
 @registry.register_hparams
 def denoise_m30():
-  """More masking during training."""
+  """训练期间更多的掩码。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_dense_0()
   hparams.decoder_type = "denoising"
   hparams.noising_spec_train = {"type": "mask", "prob": 0.3}
@@ -463,7 +560,11 @@ def denoise_m30():
 
 @registry.register_hparams
 def denoise_dense_2_m30():
-  """More masking during training."""
+  """训练期间更多的掩码（密集模型 2）。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_dense_2()
   hparams.decoder_type = "denoising"
   hparams.noising_spec_train = {"type": "mask", "prob": 0.3}
@@ -472,7 +573,11 @@ def denoise_dense_2_m30():
 
 @registry.register_hparams
 def denoise_z15():
-  """Replace tokens instead of masking."""
+  """替换token而不是掩码。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_dense_0()
   hparams.decoder_type = "denoising"
   hparams.noising_spec_train = {"type": "random_zipfian", "prob": 0.15}
@@ -482,7 +587,11 @@ def denoise_z15():
 
 @registry.register_hparams
 def denoise_t15():
-  """Noise up with dropout and a little transformer."""
+  """使用 dropout 和小型 transformer 进行噪声处理。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_dense_0()
   hparams.decoder_type = "denoising"
   hparams.noising_spec_train = {
@@ -501,10 +610,14 @@ def denoise_t15():
 
 @registry.register_hparams
 def denoise_v1_m15():
-  """Denoising experiment."""
+  """去噪实验（v1 版本）。
+
+  返回：
+      HParams 对象
+  """
   hparams = xmoe2_v1()
-  # no local attention
-  # TODO(noam): non-masked version of local-attention
+  # 没有局部注意力
+  # TODO(noam): local-attention 的非掩码版本
   hparams.decoder_layers = [
       "att" if l == "local_att" else l for l in hparams.decoder_layers]
   hparams.decoder_type = "denoising"
@@ -514,7 +627,11 @@ def denoise_v1_m15():
 
 @registry.register_hparams
 def denoise_v1_m30():
-  """More masking during training."""
+  """训练期间更多的掩码（v1 版本）。
+
+  返回：
+      HParams 对象
+  """
   hparams = denoise_v1_m15()
   hparams.noising_spec_train = {"type": "mask", "prob": 0.3}
   return hparams
@@ -522,7 +639,11 @@ def denoise_v1_m30():
 
 @registry.register_hparams
 def denoise_v1_m50():
-  """More masking during training."""
+  """训练期间更多的掩码（v1 版本，掩码概率 0.5）。
+
+  返回：
+      HParams 对象
+  """
   hparams = denoise_v1_m15()
   hparams.noising_spec_train = {"type": "mask", "prob": 0.5}
   return hparams
@@ -530,7 +651,11 @@ def denoise_v1_m50():
 
 @registry.register_hparams
 def denoise_v1_z15():
-  """Replace tokens instead of masking."""
+  """替换token而不是掩码（v1 版本）。
+
+  返回：
+      HParams 对象
+  """
   hparams = denoise_v1_m15()
   hparams.noising_spec_train = {"type": "random_zipfian", "prob": 0.15}
   return hparams
@@ -538,7 +663,11 @@ def denoise_v1_z15():
 
 @registry.register_hparams
 def denoise_v1_t15():
-  """Noise up with dropout and a little transformer."""
+  """使用 dropout 和小型 transformer 进行噪声处理（v1 版本）。
+
+  返回：
+      HParams 对象
+  """
   hparams = denoise_v1_m15()
   hparams.noising_spec_train = {
       "type": "transformer",

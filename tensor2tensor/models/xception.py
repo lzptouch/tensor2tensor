@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Xception."""
+"""Xception 模型。
+
+Xception 是一种深度可分离卷积神经网络架构，
+通过深度可分离卷积操作来提高模型的效率和性能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,7 +35,15 @@ import tensorflow.compat.v1 as tf
 
 
 def residual_block(x, hparams):
-  """A stack of convolution blocks with residual connection."""
+  """带有残差连接的卷积块堆栈。
+
+  参数：
+      x: 输入张量
+      hparams: 超参数对象
+
+  返回：
+      经过残差卷积处理后的输出张量
+  """
   k = (hparams.kernel_height, hparams.kernel_width)
   dilations_and_kernels = [((1, 1), k) for _ in range(3)]
   y = common_layers.subseparable_conv_block(
@@ -46,7 +58,15 @@ def residual_block(x, hparams):
 
 
 def xception_internal(inputs, hparams):
-  """Xception body."""
+  """Xception 主体网络。
+
+  参数：
+      inputs: 输入张量
+      hparams: 超参数对象
+
+  返回：
+      Xception 网络的输出张量
+  """
   with tf.variable_scope("xception"):
     cur = inputs
 
@@ -71,11 +91,29 @@ def xception_internal(inputs, hparams):
 
 
 def xception_entry(inputs, hidden_dim):
-  """Xception entry flow."""
+  """Xception 入口流程。
+
+  参数：
+      inputs: 输入张量
+      hidden_dim: 隐藏层维度
+
+  返回：
+      入口流程的输出张量
+  """
   with tf.variable_scope("xception_entry"):
 
     def xnet_resblock(x, filters, res_relu, name):
-      """Resblock."""
+      """残差块。
+
+      参数：
+          x: 输入张量
+          filters: 滤波器数量
+          res_relu: 是否使用 ReLU 激活
+          name: 作用域名称
+
+      返回：
+          残差块的输出张量
+      """
       with tf.variable_scope(name):
         y = common_layers.separable_conv_block(
             x,
@@ -111,7 +149,14 @@ def xception_entry(inputs, hidden_dim):
 
 
 def xception_exit(inputs):
-  """Xception exit flow."""
+  """Xception 出口流程。
+
+  参数：
+      inputs: 输入张量
+
+  返回：
+      Xception 网络的最终输出张量
+  """
   with tf.variable_scope("xception_exit"):
     x = inputs
     x_shape = x.get_shape().as_list()
@@ -135,14 +180,32 @@ def xception_exit(inputs):
 
 @registry.register_model
 class Xception(t2t_model.T2TModel):
+  """Xception 模型类。
+
+  实现基于深度可分离卷积的 Xception 网络架构。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     return xception_internal(features["inputs"], self._hparams)
 
 
 @registry.register_hparams
 def xception_base():
-  """Set of hyperparameters."""
+  """超参数集。
+
+  定义 Xception 模型的基础超参数配置。
+
+  返回：
+      HParams 对象，包含 Xception 模型的超参数配置
+  """
   hparams = common_hparams.basic_params1()
   hparams.batch_size = 128
   hparams.hidden_size = 768

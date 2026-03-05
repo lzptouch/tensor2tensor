@@ -13,4 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""可视化模块。
+
+包含用于可视化模型注意力、训练过程等的工具。
+"""
 

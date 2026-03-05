@@ -13,3 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""模型服务模块。
+
+包含用于部署和提供模型服务的工具。
+"""
+

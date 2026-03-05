@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Experiments for Multiquery-Attention Paper.
+"""多查询注意力论文的实验。
+
+实现多查询注意力（Multi-Query Attention）机制的相关实验，
+该机制通过共享键和值头来减少注意力机制的计算开销。
 """
 
 from __future__ import absolute_import

@@ -13,19 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SARI score for evaluating paraphrasing and other text generation models.
+"""用于评估释义和其他文本生成模型的 SARI 分数。
 
-The score is introduced in the following paper:
+该分数在以下论文中引入：
 
    Optimizing Statistical Machine Translation for Text Simplification
    Wei Xu, Courtney Napoles, Ellie Pavlick, Quanze Chen and Chris Callison-Burch
    In Transactions of the Association for Computational Linguistics (TACL) 2015
    http://cs.jhu.edu/~napoles/res/tacl2016-optimizing.pdf
 
-This implementation has two differences with the GitHub [1] implementation:
-  (1) Define 0/0=1 instead of 0 to give higher scores for predictions that match
-      a target exactly.
-  (2) Fix an alleged bug [2] in the deletion score computation.
+此实现与 GitHub [1] 实现有两个区别：
+  (1) 定义 0/0=1 而不是 0，以便为与目标完全匹配的预测提供更高的分数
+  (2) 修复删除分数计算中的一个所谓 bug [2]
 
 [1] https://github.com/cocoxu/simplification/blob/master/SARI.py
     (commit 0210f15)
@@ -48,14 +47,14 @@ BETA_FOR_SARI_DELETION_F_MEASURE = 0
 
 
 def _get_ngram_counter(ids, n):
-  """Get a Counter with the ngrams of the given ID list.
+  """获取给定 ID 列表的 n-gram 计数器。
 
-  Args:
-    ids: np.array or a list corresponding to a single sentence
-    n: n-gram size
+  参数：
+      ids: np.array 或列表，对应单个句子
+      n: n-gram 大小
 
-  Returns:
-    collections.Counter with ID tuples as keys and 1s as values.
+  返回：
+      collections.Counter，以 ID 元组为键，1 为值
   """
   # Remove zero IDs used to pad the sequence.
   ids = [token_id for token_id in ids if token_id != 0]
@@ -68,16 +67,16 @@ def _get_ngram_counter(ids, n):
 
 
 def _get_fbeta_score(true_positives, selected, relevant, beta=1):
-  """Compute Fbeta score.
+  """计算 Fbeta 分数。
 
-  Args:
-    true_positives: Number of true positive ngrams.
-    selected: Number of selected ngrams.
-    relevant: Number of relevant ngrams.
-    beta: 0 gives precision only, 1 gives F1 score, and Inf gives recall only.
+  参数：
+      true_positives: 真正例 n-gram 的数量
+      selected: 选中的 n-gram 数量
+      relevant: 相关的 n-gram 数量
+      beta: 0 仅给出精确率，1 给出 F1 分数，Inf 仅给出召回率
 
-  Returns:
-    Fbeta score.
+  返回：
+      Fbeta 分数
   """
   precision = 1
   if selected > 0:

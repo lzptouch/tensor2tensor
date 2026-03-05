@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Hook to run tf.GraphKeys.UPDATE_OPS."""
+"""运行 tf.GraphKeys.UPDATE_OPS 的钩子。
+
+用于在训练过程中执行更新操作（如批归一化的移动平均更新）。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,9 +25,20 @@ import tensorflow.compat.v1 as tf
 
 
 class UpdateOpsHook(tf.train.SessionRunHook):
-  """Hook to run assign_ops."""
+  """运行 assign_ops 的钩子。
+
+  用于在训练过程中执行更新操作，如批归一化层的移动平均更新。
+  """
 
   def before_run(self, run_context):
+    """在每次运行前获取更新操作。
+
+    参数：
+        run_context: 运行上下文
+
+    返回：
+        包含更新操作的 SessionRunArgs
+    """
     del run_context
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
     return tf.train.SessionRunArgs(update_ops)

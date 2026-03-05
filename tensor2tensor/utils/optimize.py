@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Optimization."""
+"""优化器。
+
+包含用于模型训练优化的函数和类。
+
+功能说明：
+- 提供多种优化器实现（Adam、Adafactor、Yellowfin 等）
+- 支持学习率调度
+- 支持梯度裁剪和归一化
+- 支持混合精度训练
+- 集成 MLPerf 性能基准
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

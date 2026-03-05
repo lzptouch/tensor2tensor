@@ -13,7 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""RNN LSTM models."""
+"""RNN LSTM 模型。
+
+实现基于长短期记忆网络（LSTM）的循环神经网络模型，
+用于序列建模任务。
+
+功能说明：
+- 实现 LSTM（Long Short-Term Memory）网络
+- 支持多层 LSTM 堆叠
+- 支持 Dropout 正则化
+- 适用于序列标注、语言建模、机器翻译等任务
+- 提供编码器 - 解码器架构支持
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,30 +43,42 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def _dropout_lstm_cell(hparams, train):
+  """创建带 Dropout 的 LSTM 单元。
+  
+  Args:
+    hparams: 超参数对象，包含 hidden_size、dropout 等配置
+    train: 布尔值，指示是否处于训练模式
+  
+  Returns:
+    带有 Dropout 包装的 LSTMCell
+  
+  功能说明：
+  - 创建 LSTM 细胞单元
+  - 应用 Dropout 防止过拟合
+  - 仅在训练模式时启用 Dropout
+  """
   return tf.nn.rnn_cell.DropoutWrapper(
       tf.nn.rnn_cell.LSTMCell(hparams.hidden_size),
       input_keep_prob=1.0 - hparams.dropout * tf.to_float(train))
 
 
 def lstm(inputs, sequence_length, hparams, train, name, initial_state=None):
-  """Adds a stack of LSTM layers on top of input.
+  """在输入顶部添加 LSTM 层堆栈。
 
-  Args:
-    inputs: The input `Tensor`, shaped `[batch_size, time_steps, hidden_size]`.
-    sequence_length: Lengths of the actual input sequence, excluding padding; a
-        `Tensor` shaped `[batch_size]`.
-    hparams: HParams; hyperparameters.
-    train: bool; `True` when constructing training graph to enable dropout.
-    name: string; Create variable names under this scope.
-    initial_state: tuple of `LSTMStateTuple`s; the initial state of each layer.
+  参数：
+      inputs: 输入张量，形状为 `[batch_size, time_steps, hidden_size]`
+      sequence_length: 实际输入序列的长度（不包括填充），形状为 `[batch_size]`
+      hparams: 超参数对象
+      train: 布尔值，构建训练图时启用 dropout 为 True
+      name: 字符串，在此作用域下创建变量名
+      initial_state: LSTMStateTuple 元组，每层的初始状态
 
-  Returns:
-    A tuple (outputs, states), where:
-      outputs: The output `Tensor`, shaped `[batch_size, time_steps,
-        hidden_size]`.
-      states: A tuple of `LSTMStateTuple`s; the final state of each layer.
-        Bidirectional LSTM returns a concatenation of last forward and backward
-        state, reduced to the original dimensionality.
+  返回：
+      元组 (outputs, states)，其中：
+          outputs: 输出张量，形状为 `[batch_size, time_steps, hidden_size]`
+          states: LSTMStateTuple 元组，每层的最终状态
+              双向 LSTM 返回最后一个前向和后向状态的连接，
+              减少到原始维度
   """
   layers = [_dropout_lstm_cell(hparams, train)
             for _ in range(hparams.num_hidden_layers)]
@@ -72,29 +95,23 @@ def lstm(inputs, sequence_length, hparams, train, name, initial_state=None):
 def lstm_attention_decoder(inputs, hparams, train, name, initial_state,
                            encoder_outputs, encoder_output_length,
                            decoder_input_length):
-  """Run LSTM cell with attention on inputs of shape [batch x time x size].
+  """在形状为 [batch x time x size] 的输入上运行带注意力的 LSTM 单元。
 
-  Args:
-    inputs: The decoder input `Tensor`, shaped `[batch_size, decoder_steps,
-        hidden_size]`.
-    hparams: HParams; hyperparameters.
-    train: bool; `True` when constructing training graph to enable dropout.
-    name: string; Create variable names under this scope.
-    initial_state: Tuple of `LSTMStateTuple`s; the initial state of each layer.
-    encoder_outputs: Encoder outputs; a `Tensor` shaped `[batch_size,
-        encoder_steps, hidden_size]`.
-    encoder_output_length: Lengths of the actual encoder outputs, excluding
-        padding; a `Tensor` shaped `[batch_size]`.
-    decoder_input_length: Lengths of the actual decoder inputs, excluding
-        padding; a `Tensor` shaped `[batch_size]`.
+  参数：
+      inputs: 解码器输入张量，形状为 `[batch_size, decoder_steps, hidden_size]`
+      hparams: 超参数对象
+      train: 布尔值，构建训练图时启用 dropout 为 True
+      name: 字符串，在此作用域下创建变量名
+      initial_state: LSTMStateTuple 元组，每层的初始状态
+      encoder_outputs: 编码器输出，形状为 `[batch_size, encoder_steps, hidden_size]`
+      encoder_output_length: 实际编码器输出的长度（不包括填充），形状为 `[batch_size]`
+      decoder_input_length: 实际解码器输入的长度（不包括填充），形状为 `[batch_size]`
 
-  Raises:
-    ValueError: If the hparams.attention_mechanism is anything other than
-        luong or bahdanau.
+  异常：
+      ValueError: 如果 hparams.attention_mechanism 不是 luong 或 bahdanau
 
-  Returns:
-    The decoder output `Tensor`, shaped `[batch_size, decoder_steps,
-    hidden_size]`.
+  返回：
+      解码器输出张量，形状为 `[batch_size, decoder_steps, hidden_size]`
   """
   layers = [_dropout_lstm_cell(hparams, train)
             for _ in range(hparams.num_hidden_layers)]

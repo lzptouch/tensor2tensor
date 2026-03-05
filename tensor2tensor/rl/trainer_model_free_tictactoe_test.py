@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests of basic flow of collecting trajectories and training PPO."""
+"""收集轨迹和训练 PPO 的基本流程测试（井字棋）。
+
+用于测试模型自由的 RL 训练器在井字棋游戏上的基本功能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

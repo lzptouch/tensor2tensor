@@ -13,3 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""评估指标模块。
+
+包含用于评估模型性能的各种指标实现。
+"""
+

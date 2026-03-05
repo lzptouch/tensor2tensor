@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for TransformerRevnet."""
+"""Transformer RevNet 测试。
+
+测试 Transformer RevNet 模型的功能和反向传播。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -28,6 +31,11 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 def transformer_revnet_test():
+  """创建 Transformer RevNet 测试超参数。
+
+  返回：
+      测试用的超参数对象
+  """
   hparams = transformer_revnet.transformer_revnet_base()
   hparams.num_hidden_layers = 2
   hparams.hidden_size = 128
@@ -39,6 +47,10 @@ def transformer_revnet_test():
 class TransformerRevnetTest(tf.test.TestCase):
 
   def testTransformer(self):
+    """测试 Transformer RevNet 模型。
+
+    测试模型的前向传播和反向传播功能。
+    """
     batch_size = 3
     input_length = 5
     target_length = 7

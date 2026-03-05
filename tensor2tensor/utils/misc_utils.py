@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Miscellaneous utilities."""
+"""杂项工具函数。
+
+包含各种通用的辅助函数和工具。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -22,14 +25,20 @@ from __future__ import print_function
 import pprint
 import re
 
-# Camel case to snake case utils
+# 驼峰命名转蛇形命名的正则表达式
 _first_cap_re = re.compile("(.)([A-Z][a-z0-9]+)")
 _all_cap_re = re.compile("([a-z0-9])([A-Z])")
 
 
 def camelcase_to_snakecase(name):
-  s1 = _first_cap_re.sub(r"\1_\2", name)
-  return _all_cap_re.sub(r"\1_\2", s1).lower()
+  """将驼峰命名转换为蛇形命名。
+
+  参数：
+      name: 驼峰命名的字符串
+
+  返回：
+      蛇形命名的字符串
+  """
 
 
 def snakecase_to_camelcase(name):

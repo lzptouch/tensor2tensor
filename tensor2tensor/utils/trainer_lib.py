@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Library for training. See t2t_trainer.py."""
+"""训练库。参见 t2t_trainer.py。
+
+包含用于训练 T2T 模型的各种函数和类。
+
+功能说明：
+- 提供训练流程的核心函数
+- 支持超参数管理和配置
+- 提供 Estimator 创建和配置功能
+- 支持分布式训练和 TPU 训练
+- 集成 MLPerf 性能基准测试
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -42,6 +52,7 @@ from tensorflow.core.protobuf import rewriter_config_pb2
 from tensorflow.python import debug
 
 
+# 从 hparams_lib 导入超参数相关函数
 create_hparams = hparams_lib.create_hparams
 add_problem_hparams = hparams_lib.add_problem_hparams
 

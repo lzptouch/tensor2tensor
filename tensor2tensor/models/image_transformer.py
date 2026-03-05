@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""image generation with transformer (attention).
+"""使用 Transformer（注意力）进行图像生成。
 
 encoder: [Self-Attention, Feed-forward] x n
 decoder: [Self-Attention, Source-Target-Attention, Feed-forward] x n
 
+该模型支持使用 Transformer 注意力机制进行条件图像生成，
+可以使用分类分布或离散混合逻辑分布（DMOL）作为似然函数。
 """
 
 from __future__ import absolute_import
@@ -38,14 +40,21 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class Imagetransformer(t2t_model.T2TModel):
-  """Conditional image generation with attention. See file docstring.
+  """使用注意力机制进行条件图像生成。
 
-  The model admits either a Categorical or discretized mixture of logistic
-  distributions (DMOL) as the likelihood. When using DMOL for training, double
-  check that the evaluation metrics also use it.
+  该模型支持分类分布或离散混合逻辑分布（DMOL）作为似然函数。
+  使用 DMOL 进行训练时，请确保评估指标也使用它。
   """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出，可能包含额外损失
+    """
     hparams = copy.copy(self._hparams)
     targets = features["targets"]
     if (hparams.likelihood == cia.DistributionType.DMOL and

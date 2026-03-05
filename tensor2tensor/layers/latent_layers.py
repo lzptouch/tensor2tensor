@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utils for latent variable models."""
+"""潜在变量模型的工具函数。
+
+包含用于构建潜在变量模型（如 VAE、VQ-VAE 等）的层和函数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

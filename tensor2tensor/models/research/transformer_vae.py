@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""AE Transformer."""
+"""AE Transformer。
+
+实现带有变分自编码器（VAE）的 Transformer 模型，
+用于图像的生成和重建任务。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -45,7 +49,19 @@ _DO_SUMMARIES = True
 
 
 def residual_conv(x, repeat, k, hparams, name, reuse=None):
-  """A stack of convolution blocks with residual connections."""
+  """带有残差连接的卷积块堆栈。
+
+  参数：
+      x: 输入张量
+      repeat: 重复次数
+      k: 卷积核大小
+      hparams: 超参数对象
+      name: 变量作用域名称
+      reuse: 是否重用变量
+
+  返回：
+      经过残差卷积处理后的张量
+  """
   with tf.variable_scope(name, reuse=reuse):
     dilations_and_kernels = [((1, 1), k) for _ in range(3)]
     for i in range(repeat):
@@ -62,7 +78,17 @@ def residual_conv(x, repeat, k, hparams, name, reuse=None):
 
 
 def attend(x, source, hparams, name):
-  """Self-attention layer with source as memory antecedent."""
+  """自注意力层，将 source 作为记忆先行。
+
+  参数：
+      x: 输入张量
+      source: 源张量，用作注意力记忆
+      hparams: 超参数对象
+      name: 变量作用域名称
+
+  返回：
+      经过自注意力处理后的张量
+  """
   with tf.variable_scope(name):
     x = tf.squeeze(x, axis=2)
     if len(source.get_shape()) > 3:

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Algorithmic data generators."""
+"""算法数据生成器。
+
+包含用于生成各种算法任务数据的类和函数。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -32,34 +35,52 @@ import tensorflow.compat.v1 as tf
 
 
 class AlgorithmicProblem(problem.Problem):
-  """Base class for algorithmic problems."""
+  """算法问题的基类。
+
+  用于处理各种算法任务，如排序、复制、反转等。
+  """
 
   @property
   def num_symbols(self):
+    """返回符号数量。"""
     raise NotImplementedError()
 
   def generator(self, nbr_symbols, max_length, nbr_cases):
-    """Generates the data."""
+    """生成数据。
+
+    参数：
+        nbr_symbols: 符号数量
+        max_length: 最大长度
+        nbr_cases: 案例数量
+
+    返回：
+        生成器
+    """
     raise NotImplementedError()
 
   @property
   def train_length(self):
+    """训练数据长度。"""
     return 40
 
   @property
   def dev_length(self):
+    """验证数据长度。"""
     return 400
 
   @property
   def train_size(self):
+    """训练数据大小。"""
     return 100000
 
   @property
   def dev_size(self):
+    """验证数据大小。"""
     return 10000
 
   @property
   def num_shards(self):
+    """分片数量。"""
     return 10
 
   def generate_data(self, data_dir, _, task_id=-1):

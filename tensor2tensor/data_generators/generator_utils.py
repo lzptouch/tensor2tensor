@@ -13,7 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for data generators."""
+"""数据生成器工具。
+
+包含用于数据生成的辅助函数，包括文件生成、数据下载、
+数据编码等功能。
+
+功能说明：
+- 提供 TFRecord 文件生成功能
+- 支持分布式数据生成（多分片）
+- 提供数据压缩和解压功能（gzip、tar）
+- 支持从网络下载数据集
+- 提供词汇表构建和编码工具
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -41,33 +52,56 @@ from tensor2tensor.utils import mlperf_log
 import tensorflow.compat.v1 as tf
 from tensorflow.compat.v1 import estimator as tf_estimator
 
+# 未打乱数据集的文件名后缀
 UNSHUFFLED_SUFFIX = "-unshuffled"
 
 
 def to_example(dictionary):
-  """Helper: build tf.Example from (string -> int/float/str list) dictionary."""
+  """从（字符串 -> int/float/str 列表）字典构建 tf.Example。
+  
+  Args:
+    dictionary: 特征字典，键为特征名（字符串），
+               值为 int/float/str 列表
+  
+  Returns:
+    tf.train.Example 对象，包含所有特征
+  
+  功能说明：
+  - 将 Python 字典转换为 TensorFlow Example 协议缓冲区
+  - 自动推断数据类型（int64、float32、bytes）
+  - 处理 Python 2/3 的兼容性问题
+  """
   features = {}
   for (k, v) in six.iteritems(dictionary):
+    # 检查空值并抛出错误
     if not v:
       raise ValueError("Empty generated field: %s" % str((k, v)))
-    # Subtly in PY2 vs PY3, map is not scriptable in py3. As a result,
-    # map objects will fail with TypeError, unless converted to a list.
+    
+    # Python 3 兼容性处理：map 对象需要转换为列表
     if six.PY3 and isinstance(v, map):
       v = list(v)
+    
+    # 根据数据类型创建对应的 Feature
     if (isinstance(v[0], six.integer_types) or
         np.issubdtype(type(v[0]), np.integer)):
+      # 整数类型：使用 Int64List
       features[k] = tf.train.Feature(int64_list=tf.train.Int64List(value=v))
     elif isinstance(v[0], float):
+      # 浮点数类型：使用 FloatList
       features[k] = tf.train.Feature(float_list=tf.train.FloatList(value=v))
     elif isinstance(v[0], six.string_types):
-      if not six.PY2:  # Convert in python 3.
+      # 字符串类型：转换为 bytes 后使用 BytesList
+      if not six.PY2:  # Python 3 需要显式转换
         v = [bytes(x, "utf-8") for x in v]
       features[k] = tf.train.Feature(bytes_list=tf.train.BytesList(value=v))
     elif isinstance(v[0], bytes):
+      # bytes 类型：直接使用 BytesList
       features[k] = tf.train.Feature(bytes_list=tf.train.BytesList(value=v))
     else:
+      # 不支持的数据类型抛出错误
       raise ValueError("Value for %s is not a recognized type; v: %s type: %s" %
                        (k, str(v[0]), str(type(v[0]))))
+  # 返回构建完成的 Example 对象
   return tf.train.Example(features=tf.train.Features(feature=features))
 
 
@@ -77,21 +111,48 @@ def generate_files_distributed(generator,
                                num_shards=1,
                                max_cases=None,
                                task_id=0):
-  """generate_files but with a single writer writing to shard task_id."""
+  """分布式生成文件：单个写入器写入指定分片。
+  
+  Args:
+    generator: 数据生成器，产生训练样本的迭代器
+    output_name: 输出文件的基础名称
+    output_dir: 输出目录路径
+    num_shards: 分片总数（用于分布式处理）
+    max_cases: 可选，最大生成样本数，None 表示无限制
+    task_id: 当前任务 ID（0 到 num_shards-1）
+  
+  Returns:
+    生成的样本数量
+  
+  功能说明：
+  - 支持分布式数据生成（每个进程处理一个分片）
+  - 将 TFRecord 文件分割成多个分片
+  - 支持限制生成的样本数量
+  - 每 10 万条样本输出一次进度日志
+  """
+  # 验证 task_id 小于分片数
   assert task_id < num_shards
+  
+  # 构建带分片 ID 的输出文件名
   output_filename = sharded_name(output_name, task_id, num_shards)
   output_file = os.path.join(output_dir, output_filename)
   tf.logging.info("Writing to file %s", output_file)
+  
+  # 创建 TFRecord 写入器
   writer = tf.python_io.TFRecordWriter(output_file)
 
   counter = 0
   for case in generator:
+    # 每 10 万条样本输出一次进度
     if counter % 100000 == 0:
       tf.logging.info("Generating case %d for %s." % (counter, output_name))
     counter += 1
+    # 如果达到最大样本数限制，则停止生成
     if max_cases and counter > max_cases:
       break
+    # 将样本转换为 TF Example 格式
     example = to_example(case)
+    # 写入 TFRecord 文件
     writer.write(example.SerializeToString())
 
   writer.close()

@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""image generation with transformer (attention).
+"""使用 Transformer（注意力）进行图像生成。
 
 encoder: [Self-Attention, Feed-forward] x n
 decoder: [Self-Attention, Source-Target-Attention, Feed-forward] x n
 
+该模型支持使用 2D Transformer 注意力机制进行条件图像生成，
+专门针对图像到图像的转换任务进行了优化。
 """
 
 from __future__ import absolute_import
@@ -39,9 +41,20 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class Imagetransformer2d(t2t_model.T2TModel):
-  """Conditional image generation with attention. See file docstring."""
+  """使用注意力机制进行条件图像生成。
+
+  实现 2D Transformer 架构用于图像生成任务。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     hparams = copy.copy(self._hparams)
     inputs = features["inputs"]
     targets = features["targets"]
@@ -70,9 +83,21 @@ class Imagetransformer2d(t2t_model.T2TModel):
 
 @registry.register_model
 class Img2imgTransformer(t2t_model.T2TModel):
-  """Image 2 Image transformer net."""
+  """图像到图像的 Transformer 网络。
+
+  实现用于图像到图像转换任务的 Transformer 架构，
+ 如风格迁移、超分辨率等任务。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     hparams = copy.copy(self._hparams)
     targets = features["targets"]
     inputs = features["inputs"]

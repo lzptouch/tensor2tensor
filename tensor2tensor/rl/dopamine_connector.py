@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Connects dopamine to as the another rl traning framework."""
+"""将 Dopamine 连接到其他 RL 训练框架。
+
+提供与 Google Dopamine 强化学习框架的集成接口，
+支持 DQN、Rainbow 等算法的复用和扩展。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -63,14 +67,22 @@ except ImportError:
 
 
 class _DQNAgent(dqn_agent.DQNAgent):
-  """Modify dopamine DQNAgent to match our needs.
+  """修改 Dopamine DQNAgent 以符合我们的需求。
 
-  Allow passing batch_size and replay_capacity to ReplayBuffer, allow not using
-  (some of) terminal episode transitions in training.
+  允许传递 batch_size 和 replay_capacity 到 ReplayBuffer，
+  允许在训练中不使用（部分）终端回合转换。
   """
 
   def __init__(self, replay_capacity, buffer_batch_size,
                generates_trainable_dones, **kwargs):
+    """初始化 DQN 代理。
+
+    参数：
+        replay_capacity: 重放缓冲区容量
+        buffer_batch_size: 缓冲区批次大小
+        generates_trainable_dones: 是否生成可训练的终止信号
+        **kwargs: 其他参数
+    """
     self._replay_capacity = replay_capacity
     self._buffer_batch_size = buffer_batch_size
     self._generates_trainable_dones = generates_trainable_dones
@@ -99,14 +111,21 @@ class _DQNAgent(dqn_agent.DQNAgent):
 
 
 class BatchDQNAgent(_DQNAgent):
-  """Batch agent for DQN.
+  """DQN 的批量代理。
 
-  Episodes are stored on done.
+  回合在终止时存储。
 
-  Assumes that all rollouts in batch would end at the same moment.
+  假设批次中的所有轨迹都会在同一时刻终止。
   """
 
   def __init__(self, env_batch_size, *args, **kwargs):
+    """初始化批量 DQN 代理。
+
+    参数：
+        env_batch_size: 环境批次大小
+        *args: 其他位置参数
+        **kwargs: 其他关键字参数
+    """
     super(BatchDQNAgent, self).__init__(*args, **kwargs)
     self.env_batch_size = env_batch_size
     obs_size = dqn_agent.NATURE_DQN_OBSERVATION_SHAPE

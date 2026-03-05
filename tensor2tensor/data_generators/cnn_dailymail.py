@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for the CNN and Daily Mail datasets."""
+"""CNN 和 Daily Mail 数据集的数据生成器。
+
+包含用于生成 CNN 和 Daily Mail 新闻文章和摘要数据集的类和函数。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,17 +36,17 @@ from tensor2tensor.utils import registry
 
 import tensorflow.compat.v1 as tf
 
-# Links to data from http://cs.nyu.edu/~kcho/DMQA/
+# 来自 http://cs.nyu.edu/~kcho/DMQA/ 的数据链接
 _CNN_STORIES_DRIVE_URL = ("https://drive.google.com/uc?"
                           "export=download&id=0BwmD_VLjROrfTHk4NFg2SndKcjQ")
 
 _DAILYMAIL_STORIES_DRIVE_URL = ("https://drive.google.com/uc?export=download&id"
                                 "=0BwmD_VLjROrfM1BxdkxVaTY2bWs")
 
-# Note: using See et al. (2017) as reference for data generation
-# For more info, use the links below
+# 注意：使用 See 等人（2017）作为数据生成的参考
+# 更多信息，请使用以下链接
 
-# Train/Dev/Test Splits for summarization data
+# 摘要数据的训练/验证/测试分割
 _TRAIN_URLS = ("https://raw.githubusercontent.com/abisee/cnn-dailymail/"
                "master/url_lists/all_train.txt")
 _DEV_URLS = ("https://raw.githubusercontent.com/abisee/cnn-dailymail/"
@@ -51,13 +54,13 @@ _DEV_URLS = ("https://raw.githubusercontent.com/abisee/cnn-dailymail/"
 _TEST_URLS = ("https://raw.githubusercontent.com/abisee/cnn-dailymail/"
               "master/url_lists/all_test.txt")
 
-# End-of-sentence marker.
+# 句子结束标记。
 EOS = text_encoder.EOS_ID
 
-# Techniques for data prep from See et al. (2017)
+# See 等人（2017）的数据准备技术
 dm_single_close_quote = u"\u2019"  # unicode
 dm_double_close_quote = u"\u201d"
-# Acceptable ways to end a sentence.
+# 可接受的句子结束方式。
 END_TOKENS = [
     u".", u"!", u"?", u"...", u"'", u"`", u"\"", dm_single_close_quote,
     dm_double_close_quote, u")"

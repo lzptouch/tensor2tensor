@@ -13,3 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Research 模型模块。
+
+包含各种实验性和前沿的模型实现，
+包括 Universal Transformer、混合专家模型、Glow 生成模型、
+神经栈、Shuffle-Exchange 网络等研究模型。
+"""
+

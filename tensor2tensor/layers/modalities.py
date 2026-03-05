@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Modalities, which specify a feature's domain.
+"""模态，用于指定特征的域。
 
-T2TModel applies a default transformation to each feature according to its
-modality. Override them by specifying a model's
-hparams.{bottom,loss,top,weights_fn}.
+T2TModel 根据其模态对每个特征应用默认转换。
+通过指定模型的 hparams.{bottom,loss,top,weights_fn} 来覆盖它们。
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -38,50 +37,53 @@ import tensorflow_probability as tfp
 
 
 class ModalityType(object):
-  """Types of modalities."""
+  """模态类型。
 
-  AUDIO = "audio"
-  AUDIO_SPECTRAL = "audio_spectral"
-  CLASS_LABEL = "class_label"
-  CTC_SYMBOL = "ctc_symbol"  # symbol with CTC loss
-  GENERIC_L2_LOSS = "generic_l2"  # identity modality with L2 loss
-  IDENTITY = "identity"  # identity top and bottom
-  IDENTITY_SYMBOL = "identity_symbol"  # symbol with identity top and bottom
-  IMAGE = "image"
-  # images using channel compression for generation
+  定义各种数据类型和任务类型，用于指定如何处理不同的特征。
+  """
+
+  AUDIO = "audio"  # 音频
+  AUDIO_SPECTRAL = "audio_spectral"  # 音频频谱
+  CLASS_LABEL = "class_label"  # 类别标签
+  CTC_SYMBOL = "ctc_symbol"  # 使用 CTC 损失的符号
+  GENERIC_L2_LOSS = "generic_l2"  # 使用 L2 损失的通用模态
+  IDENTITY = "identity"  # 恒等变换（top 和 bottom）
+  IDENTITY_SYMBOL = "identity_symbol"  # 使用恒等变换的符号
+  IMAGE = "image"  # 图像
+  # 使用通道压缩进行生成的图像
   IMAGE_CHANNEL_BOTTOM_IDENTITY = "image_channel_bottom_identity"
-  # images using channel compression for generation
+  # 使用通道压缩进行生成的图像
   IMAGE_CHANNEL_COMPRESS = "image_channel_compress"
   IMAGE_CHANNEL_EMBEDDINGS_BOTTOM = "image_channel_embeddings_bottom"
-  MULTI_LABEL = "multi_label"
-  ONE_HOT_CLASS_LABEL = "one_hot_class_label"
-  REAL = "real"  # real vectors
-  REAL_L2_LOSS = "real_l2"  # real vectors with L2 as loss
-  # real vectors with log Poisson regression loss
+  MULTI_LABEL = "multi_label"  # 多标签
+  ONE_HOT_CLASS_LABEL = "one_hot_class_label"  # 独热编码类别标签
+  REAL = "real"  # 实数向量
+  REAL_L2_LOSS = "real_l2"  # 使用 L2 损失的实数向量
+  # 使用对数泊松回归损失的实数向量
   REAL_LOG_POISSON_LOSS = "real_log_poisson"
-  SIGMOID_CLASS_LABEL = "sigmoid_class_label"  # sigmoid cross-entropy loss
-  # sigmoid cross-entropy applied on max-pooling over timesteps
+  SIGMOID_CLASS_LABEL = "sigmoid_class_label"  # Sigmoid 交叉熵损失
+  # 在时间步上进行最大池化后应用 Sigmoid 交叉熵
   SIGMOID_MAX_POOLING_CLASS_LABEL = "sigmoid_max_pooling_class_label"
-  # softmax cross-entropy applied on average-pooling over timesteps
+  # 在时间步上进行平均池化后应用 Softmax 交叉熵
   SOFTMAX_AVERAGE_POOLING_CLASS_LABEL = "softmax_average_pooling_class_label"
-  # softmax cross-entropy applied on last-timestep encoding
+  # 在最后时间步编码上应用 Softmax 交叉熵
   SOFTMAX_LAST_TIMESTEP_CLASS_LABEL = "softmax_last_timestep_class_label"
-  # softmax cross-entropy applied on max-pooling over timesteps
+  # 在时间步上进行最大池化后应用 Softmax 交叉熵
   SOFTMAX_MAX_POOLING_CLASS_LABEL = "softmax_max_pooling_class_label"
-  SPEECH_RECOGNITION = "speech_recognition"
-  SYMBOL = "symbol"
-  SYMBOL_WEIGHTS_ALL = "symbol_weights_all"  # symbol for features w/o 0-padding
-  SYMBOL_ONE_HOT = "symbol_one_hot"  # symbol with one hot as embeddings
-  VIDEO = "video"
-  VIDEO_BITWISE = "video_bitwise"  # video where bottom embeds pixels bitwise
-  VIDEO_IDENTITY = "video_identity"  # video with identity top and bottom
-  VIDEO_L1 = "video_l1"  # video with L2 loss
-  VIDEO_L2 = "video_l2"  # video with L1 loss
-  # video with L1 loss and raw input (sequences of frames)
+  SPEECH_RECOGNITION = "speech_recognition"  # 语音识别
+  SYMBOL = "symbol"  # 符号
+  SYMBOL_WEIGHTS_ALL = "symbol_weights_all"  # 无 0 填充的符号特征
+  SYMBOL_ONE_HOT = "symbol_one_hot"  # 使用独热编码嵌入的符号
+  VIDEO = "video"  # 视频
+  VIDEO_BITWISE = "video_bitwise"  # 按位嵌入像素的视频
+  VIDEO_IDENTITY = "video_identity"  # 使用恒等变换的视频
+  VIDEO_L1 = "video_l1"  # 使用 L2 损失的视频
+  VIDEO_L2 = "video_l2"  # 使用 L1 损失的视频
+  # 使用 L1 损失和原始输入（帧序列）的视频
   VIDEO_L1_RAW = "video_l1_raw"
-  # video with L2 loss and raw input (sequences of frames)
+  # 使用 L2 损失和原始输入（帧序列）的视频
   VIDEO_L2_RAW = "video_l2_raw"
-  # video with pixel noise on input during training
+  # 在训练期间输入上使用像素噪声的视频
   VIDEO_PIXEL_NOISE = "video_pixel_noise"
 
   @staticmethod

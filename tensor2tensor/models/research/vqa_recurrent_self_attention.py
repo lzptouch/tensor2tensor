@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Recurrent self attention models for VQA."""
+"""VQA 的循环自注意力模型。
+
+实现用于视觉问答（VQA）任务的循环自注意力模型，
+结合循环机制和自注意力来处理图像和问题。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -38,19 +42,21 @@ from tensorflow.contrib.layers.python.layers import utils
 
 @registry.register_model
 class VqaRecurrentSelfAttention(vqa_attention.VqaAttentionBaseline):
-  """Recurrent Self attention both on image and question."""
+  """图像和问题都使用循环自注意力。
 
-  # @staticmethod
-  # def train_hooks():
-  #   restore_resnet_hook = restore_hook.RestoreHook(
-  #       # TODO(zichaoy): hard code the path given static function.
-  #       checkpoint_path="/home/zichaoy/resnet_v1_152.ckpt",
-  #       new_model_scope="vqa_recurrent_self_attention/body/",
-  #       old_model_scope="resnet_v1_152/",
-  #   )
-  #   return [restore_resnet_hook]
+  该模型结合循环机制和自注意力，
+  对图像特征和问题文本进行编码。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典，包含图像和问题
+
+    返回：
+        模型输出
+    """
     hp = self.hparams
     # pylint: disable=eval-used
     if hp.image_input_type == "image":

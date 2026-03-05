@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Glow generative model."""
+"""Glow 生成模型。
+
+实现 Glow（Generative Flow with Invertible 1x1 Convolutions）生成模型。
+Glow 是一种基于流的生成模型，使用可逆的 1x1 卷积来实现高效的精确似然估计。
+
+参考：https://arxiv.org/abs/1807.03039
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -39,7 +45,13 @@ GLOW_DECODE_HPARAMS = ("identity_output=True,log_results=False,"
 
 @registry.register_hparams
 def glow_hparams():
-  """Glow Hparams."""
+  """Glow 超参数。
+
+  定义 Glow 模型的默认超参数配置。
+
+  返回：
+      HParams 对象，包含 Glow 模型的超参数
+  """
   hparams = common_hparams.basic_params1()
   hparams.clip_grad_norm = None
   hparams.weight_decay = 0.0
@@ -69,12 +81,25 @@ def glow_hparams():
 
 @registry.register_model
 class Glow(t2t_model.T2TModel):
-  """Glow generative model.
+  """Glow 生成模型。
 
-  Reference: https://arxiv.org/abs/1807.03039"""
+  参考：https://arxiv.org/abs/1807.03039
+
+  Glow 是一种基于流的生成模型，具有以下特点：
+  1. 可逆变换，允许精确的似然估计
+  2. 高效的采样和推断
+  3. 有意义的潜在空间表示
+  """
 
   def init_preprocess(self, features):
-    """Preprocessing as per the input modality."""
+    """根据输入模态进行预处理。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        预处理后的特征
+    """
     return features
 
   def preprocess(self, x):

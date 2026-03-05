@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities related to using bfloat16 activations and/or parameters."""
+"""与使用 bfloat16 激活值和/或参数相关的工具函数。
+
+提供混合精度训练的支持，包括 bfloat16 和 float16 激活值的处理。
+
+功能说明：
+- 支持 bfloat16 混合精度训练
+- 提供参数和激活值的量化
+- 减少内存占用并加速训练
+- 支持 TPU 优化的数据格式
+- 提供自定义 getter 函数
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,50 +33,60 @@ from tensorflow.python.framework import function
 
 
 def bfloat16_activations_var_getter(getter, *args, **kwargs):
-  """A custom getter function for float32 parameters and bfloat16 activations.
-
+  """用于 float32 参数和 bfloat16 激活值的自定义 getter 函数。
+  
   Args:
-    getter: custom getter
-    *args: arguments
-    **kwargs: keyword arguments
+    getter: TensorFlow 的自定义 getter 函数
+    *args: 位置参数列表
+    **kwargs: 关键字参数字典，包含 dtype 等信息
+  
   Returns:
-    variables with the correct dtype.
+    具有正确 dtype 的变量
+  
   Raises:
-    KeyError: if "dtype" is not provided as a kwarg.
+    KeyError: 如果"dtype"未作为关键字参数提供
+  
+  功能说明：
+  - 实现混合精度训练的变量管理
+  - 参数存储为 float32，激活值使用 bfloat16
+  - 提高训练速度同时保持数值稳定性
   """
+  # 获取请求的数据类型
   requested_dtype = kwargs["dtype"]
   if requested_dtype == tf.bfloat16:
+    # 如果是 bfloat16，则使用 float32 存储参数
     kwargs["dtype"] = tf.float32
   var = getter(*args, **kwargs)
-  # This if statement is needed to guard the cast, because batch norm
-  # assigns directly to the return value of this custom getter. The cast
-  # makes the return value not a variable so it cannot be assigned. Batch
-  # norm variables are always in fp32 so this if statement is never
-  # triggered for them.
+  # 这个 if 语句是必需的，用于保护 cast 操作
+  # 因为 batch norm 直接赋值给这个自定义 getter 的返回值
+  # cast 会使返回值不再是变量，因此无法赋值
+  # Batch norm 变量总是 fp32，所以这个 if 语句永远不会触发
   if var.dtype.base_dtype != requested_dtype:
     var = tf.cast(var, requested_dtype)
   return var
 
 
 def float16_activations_var_getter(getter, *args, **kwargs):
-  """A custom getter function for float32 parameters and float16 activations.
+  """用于 float32 参数和 float16 激活值的自定义 getter 函数。
 
-  This function ensures the following:
-    1. All variables requested with type fp16 are stored as type fp32.
-    2. All variables requested with type fp32 are returned as type fp16.
-  See https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/
-  #training_tensorflow for more information on this strategy.
+  此函数确保以下内容：
+    1. 所有请求类型为 fp16 的变量都存储为 fp32 类型
+    2. 所有请求类型为 fp32 的变量都作为 fp16 类型返回
 
-  Args:
-    getter: custom getter
-    *args: arguments
-    **kwargs: keyword arguments
+  更多信息请参阅：
+  https://docs.nvidia.com/deeplearning/sdk/mixed-precision-training/
+  #training_tensorflow
 
-  Returns:
-    variables with the correct dtype.
+  参数：
+      getter: 自定义 getter 函数
+      *args: 位置参数
+      **kwargs: 关键字参数
 
-  Raises:
-    KeyError: if "dtype" is not provided as a kwarg.
+  返回：
+      具有正确 dtype 的变量
+
+  异常：
+      KeyError: 如果"dtype"未作为关键字参数提供
   """
   requested_dtype = kwargs["dtype"]
 

@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Optimization."""
+"""优化算法。
+
+实现 Adafactor 优化器及其相关功能。
+
+功能说明：
+- 实现 Adafactor 优化算法
+- 支持内存高效的二阶矩估计
+- 提供更新裁剪机制增强稳定性
+- 适用于大规模深度学习模型训练
+- 支持量化感知训练
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -25,82 +35,78 @@ import tensorflow.compat.v1 as tf
 
 
 class AdafactorOptimizer(tf.train.Optimizer):
-  """Optimizer that implements the Adafactor algorithm.
-
-  Adafactor is described in https://arxiv.org/abs/1804.04235.
-
-  Adafactor is most similar to Adam (Kingma and Ba), the major differences are:
-
-  1. For a two-dimensional AxB weight matrix, Adafactor uses only A+B auxiliary
-     parameters to maintain the second-moment estimator, instead of AB.
-     This is advantageous on memory-limited systems.  In addition, beta1
-     (momentum) is set to zero by default, saving an additional auxiliary
-     parameter per weight.  Variables with >=3 dimensions are treated as
-     collections of two-dimensional matrices - factorization is over the final
-     two dimensions.
-
-  2. Adafactor incorporates "update-clipping" - a scale-invariant analog of
-     gradient clipping.  This adds stability
-
-  3. Adafactor does not require an external "learning rate".  By default, it
-     incorporates a relative-update-scale schedule, corresponding to
-     inverse-square-root learning-rate-decay in ADAM.  We hope this works well
-     for most applications.
-
-  ALGORITHM:
-
-  parameter -= absolute_update_scale * clip(grad / grad_scale)
-
-  where:
-
-    absolute_update_scale := relative_update_scale * parameter_scale
-    relative_update_scale := min((step_num + 1)**-0.5, 1e-2)
-    parameter_scale := max(rms(var)), epsilon2)
-    clip(x) := x / max(1.0, rms(x))
-    grad_scale := tf.sqrt(v)   (v is the second-moment estimator)
-
-  The second-moment estimator v is maintained in a manner similar to Adam:
-  We initialize
-  ```
-  if var is 2-dimensional:
-    v_r <- zeros([num_rows])
-    v_c <- zeros([num_cols])
-  if var is 0-dimensional or 1-dimensional:
-    v <- zeros(shape(var))
-  ```
-
-  The update rule is as follows:
-  ```
-  decay_rate = 1 - (step_num + 1) ^ -0.8
-  grad_squared = tf.square(grad) + epsilon1
-  if var is 2-dimensional:
-    v_r <- decay_rate * v_r + (1 - decay_rate) * reduce_mean(grad_squared, 1)
-    v_c <- decay_rate * v_c + (1 - decay_rate) * reduce_mean(grad_squared, 0)
-    v = outer_prod(v_r, v_c) / reduce_mean(v_r)
-  if var is 0-dimensional or 1-dimensional:
-    v <- decay_rate * v + (1 - decay_rate) * grad_squared
-  ```
-
-  For variables with >=3 dimensions, we factorize the second-moment accumulator
-  over the final 2 dimensions.  See the code for details.
-
-
-  Several parts of this algorithm are configurable from the initializer.
-
-    multiply_by_parameter_scale:  If True, then compute absolute_update_scale
-      as described above.  If False, let absolute_update_scale be the externally
-      supplied learning_rate.
-    learning_rate: represents relative_update_scale if
-      multiply_by_parameter_scale==True, or absolute_update_scale if
-      multiply_by_parameter_scale==False.
-    decay_rate: Decay rate of the second moment estimator (varies by step_num).
-      This should be set to a function such that:
-      1-1/(step_num + 1) <= decay_rate(step_num) < 1.0
-    beta1: enables momentum, as in Adam.  Uses extra memory if nonzero.
-    clipping_threshold: should be >=1.0 or None for no update clipping
-    factored: whether to factor the second-moment estimator.  True means
-      less memory usage.
-
+  """实现 Adafactor 算法的优化器。
+  
+  Adafactor 在 https://arxiv.org/abs/1804.04235 中描述。
+  
+  Adafactor 与 Adam（Kingma 和 Ba）最相似，主要区别在于：
+  
+  1. 对于 AxB 的二维权重矩阵，Adafactor 只使用 A+B 个辅助参数来维护
+     二阶矩估计器，而不是 AB 个。这在内存受限的系统上很有优势。
+     此外，默认情况下 beta1（动量）设置为零，节省了每个权重的额外辅助参数。
+     具有 >=3 维的变量被视为二维矩阵的集合——因式分解在最后两个维度上进行。
+  
+  2. Adafactor 结合了"更新裁剪"——梯度裁剪的尺度不变类比。这增加了稳定性
+  
+  3. Adafactor 不需要外部的"学习率"。默认情况下，它结合了相对更新尺度计划，
+     对应于 ADAM 中的逆平方根学习率衰减。我们希望这对大多数应用都有效。
+  
+  算法：
+  
+      parameter -= absolute_update_scale * clip(grad / grad_scale)
+  
+  其中：
+  
+      absolute_update_scale := relative_update_scale * parameter_scale
+      relative_update_scale := min((step_num + 1)**-0.5, 1e-2)
+      parameter_scale := max(rms(var), epsilon2)
+      clip(x) := x / max(1.0, rms(x))
+      grad_scale := tf.sqrt(v)   (v 是二阶矩估计器)
+  
+    二阶矩估计器 v 的维护方式与 Adam 类似：
+    我们初始化
+    ```
+    如果 var 是二维的：
+      v_r <- zeros([num_rows])
+      v_c <- zeros([num_cols])
+    如果 var 是 0 维或 1 维的：
+      v <- zeros(shape(var))
+    ```
+  
+    更新规则如下：
+    ```
+    decay_rate = 1 - (step_num + 1) ^ -0.8
+    grad_squared = tf.square(grad) + epsilon1
+    如果 var 是二维的：
+      v_r <- decay_rate * v_r + (1 - decay_rate) * reduce_mean(grad_squared, 1)
+      v_c <- decay_rate * v_c + (1 - decay_rate) * reduce_mean(grad_squared, 0)
+      v = outer_prod(v_r, v_c) / reduce_mean(v_r)
+    如果 var 是 0 维或 1 维的：
+      v <- decay_rate * v + (1 - decay_rate) * grad_squared
+    ```
+  
+    对于具有 >=3 维的变量，我们在最后 2 个维度上对二阶矩累加器进行因式分解。
+    有关详细信息，请参阅代码。
+  
+  
+    该算法的几个部分可以从初始化器配置。
+  
+  功能说明：
+  - 内存高效的优化器（相比 Adam 节省内存）
+  - 自动调整学习率
+  - 支持梯度裁剪和更新裁剪
+  - 适用于 Transformer 等大型模型训练
+  
+      multiply_by_parameter_scale: 如果为 True，则按上述方式计算 absolute_update_scale。
+        如果为 False，则让 absolute_update_scale 为外部提供的 learning_rate。
+      learning_rate: 如果 multiply_by_parameter_scale==True，则表示 relative_update_scale，
+        如果 multiply_by_parameter_scale==False，则表示 absolute_update_scale。
+      decay_rate: 二阶矩估计器的衰减率（随 step_num 变化）。
+        这应该设置为一个函数，使得：
+        1-1/(step_num + 1) <= decay_rate(step_num) < 1.0
+      beta1: 启用动量，如 Adam。如果非零则使用额外内存。
+      clipping_threshold: 应该 >=1.0 或 None 表示不进行更新裁剪
+      factored: 是否对二阶矩估计器进行因式分解。True 表示更少的内存使用。
   """
 
   def __init__(self,
@@ -116,31 +122,26 @@ class AdafactorOptimizer(tf.train.Optimizer):
                name="Adafactor",
                epsilon1=1e-30,
                epsilon2=1e-3):
-    """Construct a new Adafactor optimizer.
+    """构造一个新的 Adafactor 优化器。
 
-    See class comment.
+    参见类注释。
 
-    Args:
-      multiply_by_parameter_scale: a boolean
-      learning_rate: an optional Scalar or callable.
-      decay_rate: an optional Scalar.
-      beta1: a float value between 0 and 1
-      clipping_threshold: an optional float >= 1
-      factored: a boolean - whether to use factored second-moment estimator
-        for 2d variables
-      simulated_quantize_bits: train with simulated quantized parameters
-        (experimental)
-      parameter_encoding: a ParameterEncoding object to use in the case of
-        bfloat16 variables.
-      use_locking: If True use locks for update operations.
-      name: Optional name for the operations created when applying gradients.
-        Defaults to "AdafactorOptimizer".
-      epsilon1: Regularization constant for squared gradient.
-      epsilon2: Regularization constant for parameter scale.
+    参数：
+        multiply_by_parameter_scale: 布尔值
+        learning_rate: 可选的标量或可调用对象
+        decay_rate: 可选的标量
+        beta1: 0 到 1 之间的浮点值
+        clipping_threshold: 可选的浮点数 >= 1
+        factored: 布尔值 - 是否对 2d 变量使用因式分解的二阶矩估计器
+        simulated_quantize_bits: 使用模拟量化参数进行训练（实验性）
+        parameter_encoding: 在 bfloat16 变量情况下使用的 ParameterEncoding 对象
+        use_locking: 如果为 True，则在更新操作时使用锁
+        name: 创建应用梯度的操作时的可选名称。默认为"AdafactorOptimizer"
+        epsilon1: 平方梯度的正则化常数
+        epsilon2: 参数尺度的正则化常数
 
-    Raises:
-      ValueError: if absolute_update_scale and relative_update_scale_fn are both
-        present or both absent.
+    异常：
+        ValueError: 如果 absolute_update_scale 和 relative_update_scale_fn 都存在或都不存在
     """
     super(AdafactorOptimizer, self).__init__(use_locking, name)
     self._multiply_by_parameter_scale = multiply_by_parameter_scale

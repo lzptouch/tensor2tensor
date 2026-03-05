@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for tensor2tensor.models.research.transformer_vae."""
+"""Transformer VAE 测试。
+
+测试 tensor2tensor.models.research.transformer_vae 模块的功能。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -27,6 +30,10 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 class TransformerVaeTest(tf.test.TestCase):
 
   def testTransformerAEOnDVQ(self):
+    """测试带有 DVQ 瓶颈的 Transformer AE。
+
+    测试使用离散向量量化 (DVQ) 瓶颈的 Transformer 自编码器。
+    """
     batch_size = 3
     input_length = 5
     target_length = 16

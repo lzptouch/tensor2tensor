@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""BLEU metric util used during eval for MT."""
+"""机器翻译评估期间使用的 BLEU 指标工具。
+
+实现 BLEU（Bilingual Evaluation Understudy）评分算法。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -38,16 +41,15 @@ import tensorflow.compat.v1 as tf
 
 
 def _get_ngrams(segment, max_order):
-  """Extracts all n-grams up to a given maximum order from an input segment.
+  """从输入片段中提取所有不超过给定最大阶数的 n-gram。
 
-  Args:
-    segment: text segment from which n-grams will be extracted.
-    max_order: maximum length in tokens of the n-grams returned by this
-        methods.
+  参数：
+      segment: 要提取 n-gram 的文本片段
+      max_order: 此方法返回的 n-gram 的最大标记长度
 
-  Returns:
-    The Counter containing all n-grams up to max_order in segment
-    with a count of how many times each n-gram occurred.
+  返回：
+      Counter 对象，包含片段中所有不超过 max_order 的 n-gram，
+      以及每个 n-gram 出现的次数
   """
   ngram_counts = collections.Counter()
   for order in range(1, max_order + 1):
@@ -61,18 +63,16 @@ def compute_bleu(reference_corpus,
                  translation_corpus,
                  max_order=4,
                  use_bp=True):
-  """Computes BLEU score of translated segments against one or more references.
+  """计算翻译片段相对于一个或多个参考的 BLEU 分数。
 
-  Args:
-    reference_corpus: list of references for each translation. Each
-        reference should be tokenized into a list of tokens.
-    translation_corpus: list of translations to score. Each translation
-        should be tokenized into a list of tokens.
-    max_order: Maximum n-gram order to use when computing BLEU score.
-    use_bp: boolean, whether to apply brevity penalty.
+  参数：
+      reference_corpus: 每个翻译的参考列表。每个参考应分词为标记列表
+      translation_corpus: 要评分的翻译列表。每个翻译应分词为标记列表
+      max_order: 计算 BLEU 分数时使用的最大 n-gram 阶数
+      use_bp: 布尔值，是否应用简洁惩罚
 
-  Returns:
-    BLEU score.
+  返回：
+      BLEU 分数
   """
   reference_length = 0
   translation_length = 0

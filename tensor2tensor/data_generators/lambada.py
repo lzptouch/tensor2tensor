@@ -13,20 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for LAMBADA data-sets.
+"""LAMBADA 数据集的数据生成器。
 
-
-Lmbada as a language modeling task:
+LAMBADA 作为语言建模任务：
   https://arxiv.org/abs/1606.06031
 
-Lmbada as a reading comprehension task:
+LAMBADA 作为阅读理解任务：
   https://arxiv.org/abs/1610.08431
-  For lambada as reading comprehension task, one can use the dataset that is
-  provided here:
+  对于作为阅读理解任务的 LAMBADA，可以使用此处提供的数据集：
   http://ttic.uchicago.edu/~kgimpel/data/lambada-train-valid.tar.gz
-  In this dataset samples for which the target word is not in the context are
-  removed from the trained data.
-
+  在此数据集中，目标词不在上下文中的样本已从训练数据中移除。
 """
 
 from __future__ import absolute_import
@@ -55,14 +51,13 @@ _VOCAB = "lambada-vocab-2.txt"
 
 
 def _prepare_lambada_data(tmp_dir, data_dir, vocab_size, vocab_filename):
-  """Downloading and preparing the dataset.
+  """下载并准备数据集。
 
-  Args:
-    tmp_dir: tem directory
-    data_dir: data directory
-    vocab_size: size of vocabulary
-    vocab_filename: name of vocab file
-
+  参数：
+      tmp_dir: 临时目录
+      data_dir: 数据目录
+      vocab_size: 词汇表大小
+      vocab_filename: 词汇表文件名
   """
 
   if not tf.gfile.Exists(data_dir):

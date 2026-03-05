@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Data generators for LM1B data-set."""
+"""LM1B 数据集的数据生成器。
+
+包含用于生成 LM1B（10 亿词语言模型）数据集的函数和类。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -33,15 +36,15 @@ import tensorflow.compat.v1 as tf
 
 
 def _original_vocab(tmp_dir):
-  """Returns a set containing the original vocabulary.
+  """返回包含原始词汇表的集合。
 
-  This is important for comparing with published results.
+  这对于与已发表的结果进行比较很重要。
 
-  Args:
-    tmp_dir: directory containing dataset.
+  参数：
+      tmp_dir: 包含数据集的目录。
 
-  Returns:
-    a set of strings
+  返回：
+      字符串集合
   """
   vocab_url = ("http://download.tensorflow.org/models/LM_LSTM_CNN/"
                "vocab-2016-09-10.txt")
@@ -56,16 +59,16 @@ def _original_vocab(tmp_dir):
 
 
 def _replace_oov(original_vocab, line):
-  """Replace out-of-vocab words with "UNK".
+  """将词汇表外的词替换为"UNK"。
 
-  This maintains compatibility with published results.
+  这保持了与已发表结果的兼容性。
 
-  Args:
-    original_vocab: a set of strings (The standard vocabulary for the dataset)
-    line: a unicode string - a space-delimited sequence of words.
+  参数：
+      original_vocab: 字符串集合（数据集的标准词汇表）
+      line: Unicode 字符串 - 以空格分隔的词序列。
 
-  Returns:
-    a unicode string - a space-delimited sequence of words.
+  返回：
+      Unicode 字符串 - 以空格分隔的词序列。
   """
   return u" ".join(
       [word if word in original_vocab else u"UNK" for word in line.split()])
@@ -88,10 +91,10 @@ def _dev_data_filenames(tmp_dir):
 
 
 def _maybe_download_corpus(tmp_dir):
-  """Download and unpack the corpus.
+  """下载并解压语料库。
 
-  Args:
-    tmp_dir: directory containing dataset.
+  参数：
+      tmp_dir: 包含数据集的目录。
   """
   corpus_url = ("http://www.statmt.org/lm-benchmark/"
                 "1-billion-word-language-modeling-benchmark-r13output.tar.gz")

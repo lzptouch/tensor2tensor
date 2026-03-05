@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base classes and utilities for image datasets."""
+"""图像数据集的基类和工具函数。
+
+包含用于处理图像数据的辅助函数和类。
+
+功能说明：
+- 提供图像数据预处理功能
+- 支持图像格式转换（PNG、JPEG 等）
+- 提供图像增强和变换
+- 支持图像分类和标注任务
+- 集成 TensorBoard 可视化
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -35,7 +45,18 @@ import tensorflow.compat.v1 as tf
 
 
 def matplotlib_pyplot():
+  """获取配置好的 matplotlib.pyplot 模块。
+  
+  Returns:
+    配置为使用 'agg'后端的 matplotlib.pyplot 对象
+  
+  功能说明：
+  - 设置 matplotlib 使用非交互式后端（agg）
+  - 适用于服务器环境生成图像
+  - 避免 GUI 依赖问题
+  """
   import matplotlib  # pylint: disable=g-import-not-at-top
+  # 使用 agg 后端（非交互式，适合服务器）
   matplotlib.use("agg")
   import matplotlib.pyplot as plt  # pylint: disable=g-import-not-at-top
   return plt

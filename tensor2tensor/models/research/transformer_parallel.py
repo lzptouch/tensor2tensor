@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Models for semi-parallel and parallel decoding with the transformer."""
+"""用于半并行和并行解码的 Transformer 模型。
+
+实现支持块级并行预测的 Transformer 变体，
+可以显著提高解码速度，同时保持生成质量。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,9 +34,21 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class TransformerBlockParallel(transformer.Transformer):
-  """Transformer that predicts blocks of the output in parallel."""
+  """并行预测输出块的 Transformer。
+
+  该模型将输出分成块，并并行预测每个块内的所有 token，
+  从而加速解码过程。
+  """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        块级输出张量
+    """
     assert self._hparams.block_size > 0
     assert not common_layers.is_xla_compiled()
     assert "targets_segmentation" not in features

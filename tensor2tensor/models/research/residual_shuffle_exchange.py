@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Residual Shuffle-Exchange Network.
+"""残差 Shuffle-Exchange 网络。
 
-Implementation of
-"Residual Shuffle-Exchange Networks for Fast Processing of Long Sequences"
-paper by A.Draguns, E.Ozolins, A.Sostaks, M.Apinis, K.Freivalds.
+实现"Residual Shuffle-Exchange Networks for Fast Processing of Long Sequences"
+论文，作者：A.Draguns, E.Ozolins, A.Sostaks, M.Apinis, K.Freivalds。
 
-Paper: https://arxiv.org/abs/2004.04662
-Original code: https://github.com/LUMII-Syslab/RSE
+论文链接：https://arxiv.org/abs/2004.04662
+原始代码：https://github.com/LUMII-Syslab/RSE
+
+该网络通过引入残差连接改进了 Shuffle-Exchange 网络，
+能够更高效地处理长序列数据。
 """
 
 from __future__ import absolute_import
@@ -38,15 +40,18 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 
 class LayerNormalization(tf.keras.layers.Layer):
-  """Layer Normalization (LayerNorm) without output bias and gain."""
+  """无输出偏置和增益的层归一化（LayerNorm）。
+
+  层归一化是一种归一化技术，可以加速深度神经网络的训练并提高稳定性。
+  """
 
   def __init__(self, axis=1, epsilon=1e-10, **kwargs):
-    """Initialize Layer Normalization layer.
+    """初始化层归一化层。
 
-    Args:
-      axis: Tuple or number of axis for calculating mean and variance
-      epsilon: Small epsilon to avoid division by zero
-      **kwargs: keyword args passed to super.
+    参数：
+        axis: 用于计算均值和方差的轴（元组或数字）
+        epsilon: 避免除以零的小 epsilon 值
+        **kwargs: 传递给父类的关键字参数
     """
     self.axis = axis
     self.epsilon = epsilon

@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Decoding utilities."""
+"""解码工具函数。
+
+包含用于模型解码（生成预测）的各种函数和类。
+
+功能说明：
+- 提供交互式解码功能
+- 支持从文件批量解码
+- 支持从数据集解码
+- 实现束搜索（Beam Search）算法
+- 支持多种解码策略和配置
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -42,7 +52,7 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 FLAGS = tf.flags.FLAGS
 
-# Number of samples to draw for an image input (in such cases as captioning)
+# 图像解码的默认长度（用于图像描述生成等任务）
 IMAGE_DECODE_LENGTH = 100
 
 

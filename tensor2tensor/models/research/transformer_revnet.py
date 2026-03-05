@@ -13,7 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Reversible Residual Transformer."""
+"""可逆残差 Transformer。
+
+实现可逆残差网络的 Transformer 变体，
+层是可逆的并在反向传播时重新计算。
+
+y1 = x1 + f(x2)
+y2 = x2 + g(y1)
+
+f: 注意力机制
+g: 前馈网络
+
+这种设计可以显著减少内存使用，因为不需要存储中间激活值。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -30,18 +42,21 @@ from tensorflow.compat.v1 import estimator as tf_estimator
 
 @registry.register_model
 class TransformerRevnet(transformer.Transformer):
-  """Reversible Residual Transformer.
+  """可逆残差 Transformer。
 
-  Layers are reversible and are recomputed on the backward pass.
-
-  y1 = x1 + f(x2)
-  y2 = x2 + g(y1)
-
-  f: Attention
-  g: Feed-forward
+  层是可逆的并在反向传播时重新计算，
+  可以显著减少训练时的内存占用。
   """
 
   def body(self, features):
+    """模型主体函数。
+
+    参数：
+        features: 输入特征字典
+
+    返回：
+        模型输出
+    """
     hparams = self._hparams
     targets = features["targets"]
     inputs = features["inputs"]

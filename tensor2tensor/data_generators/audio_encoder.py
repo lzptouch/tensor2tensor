@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Encoder for audio data."""
+"""音频数据编码器。
+
+包含用于编码和解码音频数据的类。
+"""
 
 import os
 from subprocess import call
@@ -23,24 +26,34 @@ from scipy.io import wavfile
 
 
 class AudioEncoder(object):
-  """Encoder class for saving and loading waveforms."""
+  """用于保存和加载波形的编码器类。
+
+  提供音频波形的编码和解码功能。
+  """
 
   def __init__(self, num_reserved_ids=0, sample_rate=16000):
+    """初始化音频编码器。
+
+    参数：
+        num_reserved_ids: 保留 id 数量（必须为 0）
+        sample_rate: 采样率（默认 16000Hz）
+    """
     assert num_reserved_ids == 0
     self._sample_rate = sample_rate
 
   @property
   def num_reserved_ids(self):
+    """返回保留 id 数量。"""
     return 0
 
   def encode(self, s):
-    """Transform a string with a filename into a list of float32.
+    """将包含文件名的字符串转换为 float32 列表。
 
-    Args:
-      s: path to the file with a waveform.
+    参数：
+        s: 波形文件的路径
 
-    Returns:
-      samples: list of int16s
+    返回：
+        samples: int16 列表
     """
     def convert_to_wav(in_path, out_path, extra_args=None):
       if not os.path.exists(out_path):

@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Various reversible ops for the glow generative model."""
+"""Glow 生成模型的各种可逆操作。
+
+实现 Glow（Generative Flow with Invertible 1x1 Convolutions）模型
+中使用的各种可逆操作，包括插值、耦合层、归一化流等。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -34,16 +38,16 @@ add_arg_scope = contrib.framework().add_arg_scope
 
 
 def linear_interpolate(tensor1, tensor2, coeffs):
-  """Linearly interpolate between two tensors at coeff.
+  """在两个张量之间线性插值。
 
-  Args:
-    tensor1: 4-D Tensor, shape=(NHWC)
-    tensor2: 4-D Tensor, shape=(NHWC)
-    coeffs: list of floats.
-  Returns:
-    interp_latents: 5-D Tensor, with interp_latents[i] representing
-                    interpolations at coeffs[i].
-                    shape=(len(coeffs), NHWC)
+  参数：
+      tensor1: 4-D 张量，形状=(NHWC)
+      tensor2: 4-D 张量，形状=(NHWC)
+      coeffs: 浮点数列表，插值系数
+
+  返回：
+      interp_latents: 5-D 张量，形状=(len(coeffs), NHWC)
+          表示在 coeffs[i] 处的插值结果
   """
   interp_tensors = []
   for coeff in coeffs:
@@ -53,18 +57,18 @@ def linear_interpolate(tensor1, tensor2, coeffs):
 
 
 def linear_interpolate_rank(tensor1, tensor2, coeffs, rank=1):
-  """Linearly interpolate channel at "rank" between two tensors.
+  """在两个张量之间按"rank"线性插值通道。
 
-  The channels are ranked according to their L2 norm between tensor1[channel]
-  and tensor2[channel].
+  根据 tensor1[channel] 和 tensor2[channel] 之间的 L2 范数对通道进行排序。
 
-  Args:
-    tensor1: 4-D Tensor, NHWC
-    tensor2: 4-D Tensor, NHWC
-    coeffs: list of floats.
-    rank: integer.
-  Returns:
-    interp_latents: list of interpolated 4-D Tensors, shape=(NHWC)
+  参数：
+      tensor1: 4-D 张量，NHWC
+      tensor2: 4-D 张量，NHWC
+      coeffs: 浮点数列表
+      rank: 整数，要插值的通道排名
+
+  返回：
+      interp_latents: 插值后的 4-D 张量列表，形状=(NHWC)
   """
   # sum across space, max across channels.
   _, _, _, num_channels = common_layers.shape_list(tensor1)

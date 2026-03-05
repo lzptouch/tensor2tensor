@@ -13,20 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Prune T2TModels using some heuristic.
+"""使用某些启发式方法剪枝 T2TModel。
 
-This supports a very common form of pruning known as magnitude-based pruning.
-It ranks individual weights or units according to their magnitudes and zeros
-out the smallest k% of weights, effectively removing them from the graph.
+这支持一种非常常见的剪枝形式，称为基于幅度的剪枝。
+它根据权重或单元的幅度对它们进行排名，并将最小的 k% 的权重置零，
+有效地将它们从图中移除。
 
-Example run:
-- train a resnet on cifar10:
-    bin/t2t_trainer.py --problem=image_cifar10 --hparams_set=resnet_cifar_32 \
+示例运行：
+- 在 cifar10 上训练 resnet：
+    bin/t2t_trainer.py --problem=image_cifar10 --hparams_set=resnet_cifar_32 \\
       --model=resnet
 
-- evaluate different pruning percentages using weight-level pruning:
-    bin/t2t_prune.py --pruning_params_set=resnet_weight --problem=image_cifar10\
+- 使用权重级别剪枝评估不同的剪枝百分比：
+    bin/t2t_prune.py --pruning_params_set=resnet_weight --problem=image_cifar10\\
       --hparams_set=resnet_cifar_32 --model=resnet
+
+功能说明：
+- 实现模型剪枝（pruning）技术
+- 基于幅度（magnitude）的权重剪枝
+- 评估不同剪枝比例下的模型性能
+- 用于模型压缩和加速
 """
 
 import os

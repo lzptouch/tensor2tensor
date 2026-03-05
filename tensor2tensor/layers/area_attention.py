@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for area attention."""
+"""区域注意力机制的工具函数。
+
+包含实现区域注意力机制的函数和类。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -25,14 +28,15 @@ import tensorflow.compat.v1 as tf
 
 
 def lengths_to_area_mask(feature_length, length, max_area_size):
-  """Generates a non-padding mask for areas based on lengths.
+  """基于长度生成区域的非填充掩码。
 
-  Args:
-    feature_length: a tensor of [batch_size]
-    length: the length of the batch
-    max_area_size: the maximum area size considered
-  Returns:
-    mask: a tensor in shape of [batch_size, num_areas]
+  参数：
+      feature_length: 形状为 [batch_size] 的 Tensor
+      length: 批次长度
+      max_area_size: 考虑的最大区域大小
+
+  返回：
+      mask: 形状为 [batch_size, num_areas] 的 Tensor
   """
 
   paddings = tf.cast(tf.expand_dims(

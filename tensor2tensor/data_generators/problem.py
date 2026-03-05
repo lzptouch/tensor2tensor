@@ -13,7 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base class for problem/dataset definitions."""
+"""问题/数据集定义的基类。
+
+定义了用于描述机器学习问题的基类，包括数据集的生成、
+编码、评估等功能。
+
+功能说明：
+- Problem 基类：定义所有数据集和问题的通用接口
+- DatasetSplit：数据集分割类型（训练集、验证集、测试集）
+- SpaceID：输入和目标空间的标识符
+- 支持多种数据模态：文本、图像、音频等
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -44,75 +54,90 @@ except ImportError:
 
 
 
-class DatasetSplit(object):
-  TRAIN = tf_estimator.ModeKeys.TRAIN
-  EVAL = tf_estimator.ModeKeys.EVAL
-  TEST = "test"
+class DatasetSplit:
+  """数据集分割类型枚举。
+  
+  功能说明：
+  - 定义数据集的标准分割方式
+  - 用于区分训练、评估和测试阶段
+  """
+  # 训练集模式（使用 TensorFlow 的标准 ModeKeys）
+  TRAIN = tf_estimator.ModeKeys.TRAIN  # 训练集
+  # 评估集模式（验证集）
+  EVAL = tf_estimator.ModeKeys.EVAL  # 验证集
+  # 测试集模式（独立于训练和验证）
+  TEST = "test"  # 测试集
 
 
-class SpaceID(object):
-  """Input and target space ids. Add more as needed."""
-  # Generic / unknown output space (default)
+class SpaceID:
+  """输入和目标空间 ID 枚举。
+  
+  功能说明：
+  - 定义不同语言和任务的空间标识符
+  - 用于多语言、多模态任务的区分
+  - 根据需要可以添加更多空间 ID
+  """
+  # 通用/未知输出空间（默认值）
   GENERIC = 0
-  # Image labels
+  # 图像标签分类任务
   IMAGE_LABEL = 1
-  # English characters
+  # 英语字符级别处理
   EN_CHR = 2
-  # English tokens
+  # 英语单词/标记级别处理
   EN_TOK = 3
-  # English bpe tokens
+  # 英语 BPE（Byte Pair Encoding）子词标记
   EN_BPE_TOK = 4
-  # French characters
+  # 法语字符级别处理
   FR_CHR = 5
-  # French tokens
+  # 法语单词/标记级别处理
   FR_TOK = 6
-  # German characters
+  # 德语字符级别处理
   DE_CHR = 7
-  # German tokens
+  # 德语单词/标记级别处理
   DE_TOK = 8
-  # German bpe tokens
+  # 德语 BPE 子词标记
   DE_BPE_TOK = 9
-  # Digit cipher lexicon 0
+  # 数字密码词典 0（用于算法任务）
   DIGIT_0 = 10
-  # Digit cipher lexicon 1
+  # 数字密码词典 1（用于算法任务）
   DIGIT_1 = 11
-  # Audio waveform domain
+  # 音频波形域（原始音频信号）
   AUDIO_WAV = 12
-  # Audio spectral domain
+  # 音频频谱域（频谱图表示）
   AUDIO_SPECTRAL = 13
-  # Parse characters
+  # 解析字符级别（句法分析）
   PARSE_CHR = 14
-  # Parse tokens
+  # 解析标记级别（句法分析）
   PARSE_TOK = 15
-  # Chinese tokens
+  # 中文标记级别处理
   ZH_TOK = 16
-  # Icelandic characters
+  # 冰岛语字符级别处理
   ICE_CHAR = 17
-  # Icelandic tokens
+  # 冰岛语标记级别处理
   ICE_TOK = 18
-  # Icelandic parse tokens
+  # 冰岛语解析标记级别处理
   ICE_PARSE_TOK = 19
-  # Macedonian tokens
+  # 马其顿语标记级别处理
   MK_TOK = 20
-  # Czech tokens
+  # 捷克语标记
   CS_TOK = 21
-  # Czech characters
+  # 捷克语字符
   CS_CHR = 22
-  # Genetic bases (ACTG)
+  # 遗传碱基（ACTG）
   DNA = 23
-  # Real numbers
+  # 实数
   REAL = 24
-  # Images
+  # 图像
   IMAGE = 25
-  # Peptide
+  # 肽
   PEPTIDE = 26
   # Python
   PY_TOK = 27
   # C++
   CPP_TOK = 28
-  # Strokes
+  # 笔画
   STROKES = 29
-  # Pickled Python
+  #  pickled Python
   PICKLED_PYTHON = 30
 
 

@@ -13,20 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""Decode from trained T2T models.
+"""从训练好的 T2T 模型进行解码。
 
-This binary performs inference using the Estimator API.
+该二进制文件使用 Estimator API 执行推理。
 
-Example usage to decode from dataset:
+从数据集解码的示例用法：
 
-  t2t-decoder \
-      --data_dir ~/data \
-      --problem=algorithmic_identity_binary40 \
+  t2t-decoder \\
+      --data_dir ~/data \\
+      --problem=algorithmic_identity_binary40 \\
       --model=transformer
       --hparams_set=transformer_base
 
-Set FLAGS.decode_interactive or FLAGS.decode_from_file for alternative decode
-sources.
+设置 FLAGS.decode_interactive 或 FLAGS.decode_from_file 以使用替代的解码源。
+
+功能说明：
+- 支持交互式本地推理
+- 支持从文件批量解码
+- 支持从数据集解码
+- 支持对文件进行评分
 """
 from __future__ import absolute_import
 from __future__ import division
@@ -64,8 +69,19 @@ flags.DEFINE_bool("disable_grappler_optimizations", False,
 
 
 def create_hparams():
+  """创建超参数对象。
+  
+  Returns:
+    HParams 对象，包含模型和数据集的配置
+  
+  功能说明：
+  - 从输出目录加载超参数文件（如果存在）
+  - 支持自定义超参数覆盖
+  - 返回完整的超参数配置
+  """
   hparams_path = None
   if FLAGS.output_dir:
+    # 如果指定了输出目录，尝试从该目录加载已保存的超参数
     hparams_path = os.path.join(FLAGS.output_dir, "hparams.json")
   return trainer_lib.create_hparams(
       FLAGS.hparams_set,
@@ -76,31 +92,63 @@ def create_hparams():
 
 
 def create_decode_hparams():
+  """创建解码超参数对象。
+  
+  Returns:
+    解码超参数对象，包含解码相关的配置参数
+  
+  功能说明：
+  - 从 FLAGS 加载基础解码参数
+  - 设置分片数量和分片 ID（用于分布式解码）
+  - 配置输出文件和参考文件路径
+  """
+  # 从 FLAGS 加载基础解码参数
   decode_hp = decoding.decode_hparams(FLAGS.decode_hparams)
+  # 设置解码分片数量
   decode_hp.shards = FLAGS.decode_shards
+  # 设置当前分片 ID
   decode_hp.shard_id = FLAGS.worker_id
+  # 处理是否在内存中解码
   decode_in_memory = FLAGS.decode_in_memory or decode_hp.decode_in_memory
   decode_hp.decode_in_memory = decode_in_memory
+  # 设置输出文件路径
   decode_hp.decode_to_file = FLAGS.decode_to_file
+  # 设置参考翻译文件路径（用于评估）
   decode_hp.decode_reference = FLAGS.decode_reference
   return decode_hp
 
 
 def decode(estimator, hparams, decode_hp):
-  """Decode from estimator. Interactive, from file, or from dataset."""
+  """从 Estimator 进行解码。支持交互式、从文件或从数据集解码。
+  
+  Args:
+    estimator: TensorFlow Estimator 对象
+    hparams: 模型超参数
+    decode_hp: 解码超参数
+  
+  功能说明：
+  - 根据 FLAGS 选择不同的解码模式
+  - 支持交互式本地推理（decode_interactive）
+  - 支持从文件批量解码（decode_from_file）
+  - 支持从标准数据集解码（默认模式）
+  """
   if FLAGS.decode_interactive:
+    # 交互式模式：用户输入文本，模型实时翻译
     if estimator.config.use_tpu:
       raise ValueError("TPU can only decode from dataset.")
     decoding.decode_interactively(estimator, hparams, decode_hp,
                                   checkpoint_path=FLAGS.checkpoint_path)
   elif FLAGS.decode_from_file:
+    # 从文件解码：读取输入文件中的每一行进行翻译
     decoding.decode_from_file(estimator, FLAGS.decode_from_file, hparams,
                               decode_hp, FLAGS.decode_to_file,
                               checkpoint_path=FLAGS.checkpoint_path)
+    # 如果需要保持时间戳，则设置输出文件的时间戳与检查点一致
     if FLAGS.checkpoint_path and FLAGS.keep_timestamp:
       ckpt_time = os.path.getmtime(FLAGS.checkpoint_path + ".index")
       os.utime(FLAGS.decode_to_file, (ckpt_time, ckpt_time))
   else:
+    # 从数据集解码：使用测试集或验证集进行批量解码
     decoding.decode_from_dataset(
         estimator,
         FLAGS.problem,

@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for BatchRunner."""
+"""BatchRunner 的测试。
+
+用于测试批量运行器的功能和正确性。
+"""
 
 from __future__ import absolute_import
 from __future__ import division

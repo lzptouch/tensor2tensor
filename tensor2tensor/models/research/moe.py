@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Mixture-of-experts code.
+"""混合专家（Mixture-of-Experts）代码。
 
-Interfaces and algorithms are under development and subject to rapid change
-without notice.
+实现混合专家模型，这是一种稀疏门控的专家混合架构，
+可以显著提高模型容量同时保持计算效率。
+
+接口和算法正在开发中，可能会在没有通知的情况下快速更改。
 """
 
 from __future__ import absolute_import
@@ -30,71 +32,66 @@ import tensorflow.compat.v1 as tf
 def transformer_moe_layer_v1(inputs, output_dim, hparams, train,
                              master_dtype=tf.bfloat16,
                              slice_dtype=tf.float32):
-  """Local mixture of experts that works well on TPU.
+  """在 TPU 上表现良好的局部混合专家层。
 
-  Adapted from the paper https://arxiv.org/abs/1701.06538
+  改编自论文 https://arxiv.org/abs/1701.06538
 
-  Note: until the algorithm and inferface solidify, we pass in a hyperparameters
-  dictionary in order not to complicate the interface in mtf_transformer.py .
-  Once this code moves out of "research", we should pass the hyperparameters
-  separately.
+  注意：在算法和接口稳定之前，我们传递超参数字典，以免使
+  mtf_transformer.py 中的接口复杂化。一旦此代码移出"research"，
+  我们应该单独传递超参数。
 
-  Hyperparameters used:
-    hparams.moe_num_experts: number of experts
-    hparams.moe_hidden_size: size of hidden layer in each expert
-    hparams.moe_group_size: size of each "group" for gating purposes
-    hparams.moe_capacity_factor_train: a float
-    hparams.moe_capacity_factor_eval: a float
-    hparams.moe_gating: a string
-    + all hyperparmeters used by _top_2_gating()
+  使用的超参数：
+      hparams.moe_num_experts: 专家数量
+      hparams.moe_hidden_size: 每个专家中隐藏层的大小
+      hparams.moe_group_size: 用于门控的每个"组"的大小
+      hparams.moe_capacity_factor_train: 浮点数
+      hparams.moe_capacity_factor_eval: 浮点数
+      hparams.moe_gating: 字符串
+      + _top_2_gating() 使用的所有超参数
 
-  The number of parameters in the gating network is:
-    (input_dim.size * hparams.num_experts) +
+  门控网络中的参数数量为：
+      (input_dim.size * hparams.num_experts) +
 
-  The number of parameters in the experts themselves is:
-    (hparams.num_experts
-     * (input_dim.size + output_dim.size)
-     * hparams.moe_hidden_size)
+  专家本身的参数数量为：
+      (hparams.num_experts
+       * (input_dim.size + output_dim.size)
+       * hparams.moe_hidden_size)
 
-  The input is n-dimensional: [<batch_and_length_dims>, input_dim], consisting
-  of the representations of all positions in a batch of sequences.
+  输入是 n 维的：[<batch_and_length_dims>, input_dim]，由
+  一批序列中所有位置的表示组成。
 
-  Each position of each sequence is sent to 0-2 experts.  The expert
-  choices and the combination weights are determined by a learned gating
-  function.
+  每个序列的每个位置被发送到 0-2 个专家。专家选择和组合权重
+  由学习的门控函数确定。
 
-  This function returns a small auxiliary loss that should be added to the
-  training loss of the model.  This loss helps to balance expert usage.
-  Without the loss, it is very likely that a few experts will be trained and
-  the rest will starve.
+  此函数返回一个小的辅助损失，应添加到模型的训练损失中。
+  此损失有助于平衡专家使用。没有损失，很可能只有少数专家
+  被训练，其余的会"挨饿"。
 
-  Several hacks are necessary to get around current TPU limitations:
+  需要几个技巧来绕过当前的 TPU 限制：
 
-  - To ensure static shapes, we enforce (by truncation/padding)
-    that each sequence send the same number of elements to each expert.
+  - 为了确保静态形状，我们强制（通过截断/填充）
+    每个序列向每个专家发送相同数量的元素。
 
-    It would make more sense to enforce this equality over the entire batch,
-    but due to our hacked-up gather-by-matmul implementation, we need to divide
-    the batch into "groups".  For each group, the same number of elements
-    are sent to each expert.
+    对整个批次强制执行此等式会更有意义，但由于我们
+    使用 matmul 实现的 gather，我们需要将批次分成"组"。
+    对于每个组，发送到每个专家的元素数量相同。
 
-  TODO(noam): Factor this code better.  We want to be able to substitute
-  different code for the experts themselves.
+  参数：
+      inputs: 输入张量
+      output_dim: 输出维度
+      hparams: 超参数对象
+      train: 是否为训练模式
+      master_dtype: 主数据类型，默认为 tf.bfloat16
+      slice_dtype: 切片数据类型，默认为 tf.float32
 
-  Args:
-    inputs: a mtf.Tensor with shape [<batch_dims...>, length_dim, input_dim]
-    output_dim: a mtf.Dimension (for Transformer, this is input_dim)
-    hparams: model hyperparameters
-    train: a boolean
-    master_dtype: a tf.dtype
-    slice_dtype: a tf.dtype
+  返回：
+      专家层的输出和辅助损失
 
-  Returns:
-    outputs: a Tensor with shape [<batch_dims...>, length_dim, output_dim]
-    loss: a mtf scalar
+  注意：
+      TODO(noam): 更好地重构此代码。我们希望能够为专家本身替换不同的代码。
 
-  Raises:
-    ValueError: on unrecognized hparams.moe_gating
+  异常：
+      ValueError: 未识别的 hparams.moe_gating
   """
   orig_inputs = inputs
   input_dim = inputs.shape.dims[-1]

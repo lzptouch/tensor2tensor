@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests NeuralStackCell, NeuralQueueCell and NeuralStackModel."""
+"""测试 NeuralStackCell、NeuralQueueCell 和 NeuralStackModel。
+
+测试神经栈和神经队列的功能和性能。
+"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -29,10 +32,10 @@ import tensorflow.compat.v1 as tf
 
 
 def build_fake_controller(cell):
-  """Create a scalar variable to track the timestep.
+  """创建一个标量变量来跟踪时间步。
 
-  Args:
-    cell: The NeuralStackCell to add the variable to.
+  参数：
+      cell: 要添加变量的 NeuralStackCell
   """
   cell.current_step = cell.add_variable(
       "current_step", [],
@@ -42,16 +45,16 @@ def build_fake_controller(cell):
 
 
 def call_fake_controller(push_values, pop_values, write_values, output_values):
-  """Mock a RNN controller from a set of expected outputs.
+  """从一组预期输出来模拟 RNN 控制器。
 
-  Args:
-    push_values: Expected controller push values.
-    pop_values: Expected controller pop values.
-    write_values: Expected controller write values.
-    output_values: Expected controller output values.
+  参数：
+      push_values: 预期的控制器推送值
+      pop_values: 预期的控制器弹出值
+      write_values: 预期的控制器写入值
+      output_values: 预期的控制器输出值
 
-  Returns:
-    A callable which behaves like the call method of an NeuralStackCell.
+  返回：
+      一个可调用对象，其行为类似于 NeuralStackCell 的 call 方法
   """
   def call(cell, inputs, prev_read_values, controller_state, batch_size):
     del inputs
@@ -79,12 +82,26 @@ def call_fake_controller(push_values, pop_values, write_values, output_values):
 
 
 def assert_controller_shapes(test, controller_outputs, controller_shapes):
+  """断言控制器输出的形状正确。
+
+  参数：
+      test: 测试实例
+      controller_outputs: 控制器输出
+      controller_shapes: 预期的形状
+  """
   for name, output, shape in zip(controller_outputs._fields, controller_outputs,
                                  controller_shapes):
     test.assertEqual(shape, output.shape, "%s shapes don't match" % name)
 
 
 def assert_cell_shapes(test, output_state, zero_state):
+  """断言细胞状态的形状正确。
+
+  参数：
+      test: 测试实例
+      output_state: 输出状态
+      zero_state: 零状态
+  """
   for name, output, zero in zip(output_state._fields, output_state,
                                 zero_state):
     test.assertEqual(zero.shape, output.shape, "%s shapes don't match" % name)
@@ -93,8 +110,7 @@ def assert_cell_shapes(test, output_state, zero_state):
 class NeuralStackCellTest(tf.test.TestCase):
 
   def test_cell_shapes(self):
-    """Check that all the NeuralStackCell tensor shapes are correct.
-    """
+    """检查 NeuralStackCell 的所有张量形状是否正确。"""
     batch_size = 5
     embedding_size = 3
     memory_size = 6
@@ -110,7 +126,7 @@ class NeuralStackCellTest(tf.test.TestCase):
     zero_state = stack.zero_state(batch_size, tf.float32)
     (outputs, (stack_next_state)) = stack.call(stack_input, zero_state)
 
-    # Make sure that stack output shapes match stack input shapes
+    # 确保栈输出形状与栈输入形状匹配
     self.assertEqual(outputs.shape, stack_input.shape)
 
     assert_cell_shapes(self, stack_next_state, zero_state)
@@ -128,9 +144,9 @@ class NeuralStackCellTest(tf.test.TestCase):
                                         [[0.0, 0.0, 0.0]],
                                         [[0.0, 0.0, 0.0]]]))
   def test_push_pop(self):
-    """Test pushing a popping from a NeuralStackCell.
+    """测试从 NeuralStackCell 推送和弹出操作。
 
-    The sequence of operations is:
+    操作序列是：
       push([1.0, 0.0, 0.0])
       push([0.0, 1.0, 0.0])
       pop()

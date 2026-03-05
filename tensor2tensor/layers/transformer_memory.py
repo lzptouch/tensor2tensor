@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The memory unit for Transformer."""
+"""Transformer 的记忆单元。
+
+实现用于 Transformer 模型的循环记忆机制。
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -23,50 +26,56 @@ import tensorflow.compat.v1 as tf
 
 
 class RecurrentMemory(object):
-  """Base class for recurrent memory.
+  """循环记忆的基类。
 
-  This class defines the memory interface, but behaves like a no-op.
+  该类定义了记忆接口，但行为类似于空操作。
   """
 
   def pre_attention(self, segment, query_antecedent, memory_antecedent, bias):
-    """Called prior to self-attention, to incorporate memory items.
+    """在自注意力之前调用，用于整合记忆项。
 
-    Args:
-      segment: an integer Tensor with shape [batch]
-      query_antecedent: a Tensor with shape [batch, length_q, channels]
-      memory_antecedent: must be None. Attention normally allows this to be a
-        Tensor with shape [batch, length_m, channels], but we currently only
-        support memory for decoder-side self-attention.
-      bias: bias Tensor (see attention_bias())
-    Returns:
-      (data, new_query_antecedent, new_memory_antecedent, new_bias)
+    参数：
+        segment: 形状为 [batch] 的整数 Tensor
+        query_antecedent: 形状为 [batch, length_q, channels] 的 Tensor
+        memory_antecedent: 必须为 None。注意力通常允许这是一个
+            形状为 [batch, length_m, channels] 的 Tensor，但目前我们只
+            支持解码器侧自注意力的记忆。
+        bias: 偏置 Tensor（参见 attention_bias()）
+
+    返回：
+        (data, new_query_antecedent, new_memory_antecedent, new_bias)
     """
     del segment
     return None, query_antecedent, memory_antecedent, bias
 
   def post_attention(self, token, x):
-    """Called after self-attention. The memory can be updated here.
+    """在自注意力之后调用。记忆可以在此更新。
 
-    Args:
-      token: Data returned by pre_attention, which can be used to carry over
-        state related to the current memory operation.
-      x: a Tensor of data after self-attention and feed-forward
-    Returns:
-      a (possibly modified) version of the input x
+    参数：
+        token: pre_attention 返回的数据，可用于传递与当前记忆操作相关的状态
+        x: 自注意力和前馈之后的数据 Tensor
+
+    返回：
+        输入 x 的（可能修改过的）版本
     """
     assert token is None
     return x
 
 
 class RecentTokensMemory(RecurrentMemory):
-  """A memory module that caches features for recent tokens.
+  """缓存最近标记特征的记忆模块。
 
-  When the number of tokens cached is equal to the chunk size, this is
-  equivalent to the memory used by Transformer-XL
-  (https://arxiv.org/abs/1901.02860)
+  当缓存的标记数量等于块大小时，这等价于 Transformer-XL
+  （https://arxiv.org/abs/1901.02860）中使用的记忆。
   """
 
   def __init__(self, name, hparams):
+    """初始化最近标记记忆模块。
+
+    参数：
+        name: 模块名称
+        hparams: 超参数
+    """
     hidden_size = hparams.hidden_size
     self.chunk_length = hparams.split_targets_chunk_length
     assert self.chunk_length > 0, "Chunking is required to use recurrent memory"

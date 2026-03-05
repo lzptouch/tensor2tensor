@@ -13,14 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Transformer model from "Attention Is All You Need".
+"""来自 "Attention Is All You Need" 的 Transformer 模型。
 
-The Transformer model consists of an encoder and a decoder. Both are stacks
-of self-attention layers followed by feed-forward layers. This model yields
-good results on a number of problems, especially in NLP and machine translation.
+Transformer 模型由编码器和解码器组成。两者都是自注意力层后接前馈层的堆栈。
+该模型在许多问题上取得了良好的结果，特别是在 NLP 和机器翻译领域。
 
-See "Attention Is All You Need" (https://arxiv.org/abs/1706.03762) for the full
-description of the model and the results obtained with its early version.
+参见 "Attention Is All You Need" (https://arxiv.org/abs/1706.03762) 获取模型的完整描述
+以及其早期版本获得的结果。
+
+功能说明：
+- 实现完整的 Transformer 架构（编码器 - 解码器结构）
+- 支持自注意力机制（Self-Attention）
+- 支持多头注意力（Multi-Head Attention）
+- 支持位置编码（Positional Encoding）
+- 支持束搜索（Beam Search）解码
+- 适用于机器翻译、文本摘要、语言建模等任务
 """
 
 from __future__ import absolute_import
@@ -58,41 +65,51 @@ transformer_ffn_layer = transformer_layers.transformer_ffn_layer
 def transformer_encode(encoder_function, inputs, target_space, hparams,
                        attention_weights=None, features=None, losses=None,
                        prepare_encoder_fn=None, **kwargs):
-  """Encode transformer inputs.
-
+  """编码 Transformer 输入。
+  
   Args:
-    encoder_function: the encoder function
-    inputs: Transformer inputs [batch_size, input_length, 1, hidden_dim] which
-      will be flattened along the two spatial dimensions.
-    target_space: scalar, target space ID.
-    hparams: hyperparameters for model.
-    attention_weights: weight to store attention to.
-    features: optionally pass the entire features dictionary as well. This is
-      needed now for "packed" datasets.
-    losses: optional list onto which to append extra training losses
-    prepare_encoder_fn: optional, alternative to transformer_prepare_encoder.
-    **kwargs: additional arguments to pass to encoder_function
-
+    encoder_function: 编码器函数，用于执行实际的编码操作
+    inputs: Transformer 输入 [batch_size, input_length, 1, hidden_dim]
+           将在两个空间维度上展平
+    target_space: 标量，目标空间 ID，标识目标语言或任务类型
+    hparams: 模型超参数，包含层数、隐藏单元数等配置
+    attention_weights: 可选，用于存储注意力权重的字典
+    features: 可选，传递完整的特征字典，用于"packed"数据集
+    losses: 可选，用于附加额外训练损失的列表
+    prepare_encoder_fn: 可选，替代默认的 transformer_prepare_encoder 函数
+    **kwargs: 传递给 encoder_function 的其他参数
+  
   Returns:
-    Tuple of:
-        encoder_output: Encoder representation.
-            [batch_size, input_length, hidden_dim]
-        encoder_decoder_attention_bias: Bias and mask weights for
-            encoder-decoder attention. [batch_size, input_length]
+    元组：
+      encoder_output: 编码器输出表示 [batch_size, input_length, hidden_dim]
+      encoder_decoder_attention_bias: 编码器 - 解码器注意力偏置和掩码权重
+                                   [batch_size, input_length]
+  
+  功能说明：
+  - 准备编码器输入（包括位置编码）
+  - 应用 dropout 正则化
+  - 处理单向编码器（unidirectional）的特殊情况
+  - 支持 MLPerf 日志记录
   """
+  # 将 4D 输入展平为 3D（合并空间维度）
   inputs = common_layers.flatten4d3d(inputs)
 
+  # 如果没有提供 prepare_encoder_fn，使用默认的 transformer_prepare_encoder
   if not prepare_encoder_fn:
     prepare_encoder_fn = transformer_prepare_encoder
+  
+  # 准备编码器输入：添加位置编码、生成注意力偏置
   encoder_input, self_attention_bias, encoder_decoder_attention_bias = (
       prepare_encoder_fn(
           inputs, target_space, hparams, features=features))
 
+  # MLPerf 性能基准日志记录：记录 dropout 配置
   mlperf_log.transformer_print(
       key=mlperf_log.MODEL_HP_LAYER_POSTPROCESS_DROPOUT,
       value=hparams.layer_prepostprocess_dropout,
       hparams=hparams)
 
+  # 应用 dropout 正则化到编码器输入
   encoder_input = tf.nn.dropout(encoder_input,
                                 1.0 - hparams.layer_prepostprocess_dropout)
 
